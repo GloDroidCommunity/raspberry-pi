@@ -1,0 +1,29 @@
+From 9d63be45bd0fff14b15bb36043950c6331acca0b Mon Sep 17 00:00:00 2001
+From: Konsta <konsta09@gmail.com>
+Date: Sun, 8 Jan 2023 17:55:02 +0200
+Subject: [PATCH] HACK: rpi4: force NV12 pixel format
+
+* minigbm gralloc uses NV12 for flexible YCBCR_420_888
+
+Change-Id: Ifd71736c2d7e29732ea661b39293b2f2e404879f
+---
+ components/V4L2Decoder.cpp | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/components/V4L2Decoder.cpp b/components/V4L2Decoder.cpp
+index d7d8b55..9440135 100644
+--- a/components/V4L2Decoder.cpp
++++ b/components/V4L2Decoder.cpp
+@@ -558,11 +558,7 @@ bool V4L2Decoder::changeResolution() {
+ bool V4L2Decoder::setupOutputFormat(const ui::Size& size) {
+     for (const uint32_t& pixfmt :
+          mDevice->enumerateSupportedPixelformats(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
+-        ALOGV("Available pixel format %s", fourccToString(pixfmt).c_str());
+-    }
+-
+-    for (const uint32_t& pixfmt :
+-         mDevice->enumerateSupportedPixelformats(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
++        if (pixfmt != Fourcc::NV12) continue;
+         if (std::find(kSupportedOutputFourccs.begin(), kSupportedOutputFourccs.end(), pixfmt) ==
+             kSupportedOutputFourccs.end()) {
+             ALOGD("Pixel format %s is not supported, skipping...", fourccToString(pixfmt).c_str());

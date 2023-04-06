@@ -6,6 +6,7 @@
   <remote  name="mbroadband" fetch="https://gitlab.freedesktop.org/mobile-broadband" />
   <remote  name="dbus"       fetch="https://gitlab.freedesktop.org/dbus" />
   <remote  name="libcamera"  fetch="https://git.libcamera.org/libcamera" />
+  <remote  name="raspberry-vanilla" fetch="https://github.com/raspberry-vanilla/" />
 
   <remove-project name="platform/external/mesa3d" />
   <remove-project name="platform/external/drm_hwcomposer" />
@@ -24,6 +25,11 @@
   <project path="glodroid/vendor/libcamera"                     remote="libcamera" name="libcamera.git"      groups="glodroid" revision="ea8ae5afff226f9373c82c1a3185e532d5d6eda0" />
   <project path="glodroid/vendor/libcamera/subprojects/libyuv"  remote="glodroid"  name="glodroid_forks.git" groups="glodroid" revision="refs/tags/libyuv-v0.8.2" />
   <project path="glodroid/vendor/libcamera/subprojects/libyaml" remote="github"    name="yaml/libyaml.git"   groups="glodroid" revision="refs/tags/0.2.5" />
+
+  <!-- FFmpeg -->
+  <project path="external/dav1d" name="android_external_dav1d.git" remote="raspberry-vanilla" revision="android-13.0" />
+  <project path="external/ffmpeg" name="android_external_ffmpeg.git" remote="raspberry-vanilla" revision="android-13.0" />
+  <project path="external/ffmpeg_codec2" name="android_external_ffmpeg_codec2.git" remote="raspberry-vanilla" revision="android-13.0" />
 
   <!-- modem components (vendor) -->
   <project path="glodroid/vendor/mm-radio"        remote="glodroid"    name="mm-radio.git"     groups="glodroid" revision="90f9f9a8b20ce2e153d39c9fc250ab2733a7fbb9" />

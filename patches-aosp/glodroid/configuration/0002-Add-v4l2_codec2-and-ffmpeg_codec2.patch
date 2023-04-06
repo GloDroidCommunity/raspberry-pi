@@ -1,0 +1,285 @@
+From d00d0680ec4002927ca0a33605996808e1d9ad18 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Micha=C5=82=20Gapi=C5=84ski?= <mike@gapinski.eu>
+Date: Thu, 6 Apr 2023 14:45:25 +0200
+Subject: [PATCH 1/1] Add v4l2_codec2(h264 encoder) and ffmpeg_codec2(hwaccel
+ h264, h265 + various sw decoders)
+
+---
+ common/base/ueventd.common.rc                 | 12 ++++-
+ .../codecs/android.hardware.media.omx@1.0.xml | 15 +++++++
+ common/codecs/board.mk                        |  9 ++++
+ common/codecs/codec2.vendor.ext.policy        | 20 +++++++++
+ common/codecs/device.mk                       | 45 ++++++++++++++++++-
+ ..._framework_compatibility_matrix_codec2.xml | 20 +++++++++
+ common/codecs/media_codecs.xml                |  6 +++
+ common/codecs/media_codecs_v4l2_c2_video.xml  | 13 ++++++
+ common/codecs/sepolicy/vendor/file_contexts   |  6 +++
+ .../0015-rpi4-hwcodecs-constraints.patch      | 36 +++++++++++++++
+ 10 files changed, 180 insertions(+), 2 deletions(-)
+ create mode 100644 common/codecs/android.hardware.media.omx@1.0.xml
+ create mode 100644 common/codecs/codec2.vendor.ext.policy
+ create mode 100644 common/codecs/device_framework_compatibility_matrix_codec2.xml
+ create mode 100644 common/codecs/media_codecs.xml
+ create mode 100644 common/codecs/media_codecs_v4l2_c2_video.xml
+ create mode 100644 common/codecs/sepolicy/vendor/file_contexts
+ create mode 100644 common/graphics/patches-minigbm/0015-rpi4-hwcodecs-constraints.patch
+
+diff --git a/common/base/ueventd.common.rc b/common/base/ueventd.common.rc
+index ec7c3d0..0964edf 100644
+--- a/common/base/ueventd.common.rc
++++ b/common/base/ueventd.common.rc
+@@ -37,4 +37,14 @@ subsystem usbmisc
+ /sys/devices/system  *                scaling_max_freq 0644    system       system
+ 
+ # USB Gadget HAL v1.2
+-/sys/class/udc*                          current_speed 0644    system       system
+\ No newline at end of file
++/sys/class/udc*                          current_speed 0644    system       system
++
++# V4L2
++/dev/media0                                            0666    media        media
++/dev/media1                                            0666    media        media
++/dev/video10                                           0666    media        media
++/dev/video11                                           0666    media        media
++/dev/video12                                           0660    media        media
++/dev/video18                                           0666    media        media
++/dev/video19                                           0666    media        media
++/dev/video31                                           0666    media        media
+diff --git a/common/codecs/android.hardware.media.omx@1.0.xml b/common/codecs/android.hardware.media.omx@1.0.xml
+new file mode 100644
+index 0000000..191e66b
+--- /dev/null
++++ b/common/codecs/android.hardware.media.omx@1.0.xml
+@@ -0,0 +1,15 @@
++<manifest version="1.0" type="device" target-level="7">
++<hal format="hidl">
++        <name>android.hardware.media.omx</name>
++        <transport>hwbinder</transport>
++        <version>1.0</version>
++        <interface>
++            <name>IOmx</name>
++            <instance>default</instance>
++        </interface>
++        <interface>
++            <name>IOmxStore</name>
++            <instance>default</instance>
++        </interface>
++    </hal>
++</manifest>
+diff --git a/common/codecs/board.mk b/common/codecs/board.mk
+index ab75105..828f5e7 100644
+--- a/common/codecs/board.mk
++++ b/common/codecs/board.mk
+@@ -3,3 +3,12 @@
+ # GloDroid project (https://github.com/GloDroid)
+ #
+ # Copyright (C) 2022 Roman Stratiienko (r.stratiienko@gmail.com)
++
++
++DEVICE_MANIFEST_FILE += \
++    glodroid/configuration/common/codecs/android.hardware.media.omx@1.0.xml \
++
++BOARD_VENDOR_SEPOLICY_DIRS += glodroid/configuration/common/codecs/sepolicy/vendor
++
++DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += \
++    glodroid/configuration/common/codecs/device_framework_compatibility_matrix_codec2.xml \
+diff --git a/common/codecs/codec2.vendor.ext.policy b/common/codecs/codec2.vendor.ext.policy
+new file mode 100644
+index 0000000..faaaedc
+--- /dev/null
++++ b/common/codecs/codec2.vendor.ext.policy
+@@ -0,0 +1,20 @@
++# device specific syscalls
++_llseek: 1
++epoll_create1: 1
++epoll_ctl: 1
++epoll_pwait: 1
++eventfd2: 1
++fstat64: 1
++fstatat64: 1
++fstatfs64: 1
++getcwd: 1
++getdents64: 1
++geteuid32: 1
++getuid32: 1
++mmap2: 1
++open: 1
++pselect6: 1
++sched_getaffinity: 1
++statfs64: 1
++sysinfo: 1
++ugetrlimit: 1
+diff --git a/common/codecs/device.mk b/common/codecs/device.mk
+index e04adfa..9dae8ba 100644
+--- a/common/codecs/device.mk
++++ b/common/codecs/device.mk
+@@ -13,7 +13,8 @@ PRODUCT_VENDOR_PROPERTIES += \
+ 
+ # Copy media codecs config file
+ PRODUCT_COPY_FILES += \
+-    frameworks/av/media/libstagefright/data/media_codecs_google_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
++    $(LOCAL_PATH)/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
++    $(LOCAL_PATH)/media_codecs_v4l2_c2_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_v4l2_c2_video.xml \
+     frameworks/av/media/libstagefright/data/media_codecs_google_c2_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_c2_video.xml \
+     frameworks/av/media/libstagefright/data/media_codecs_google_c2_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_c2_audio.xml \
+     $(LOCAL_PATH)/media_profiles_V1_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_V1_0.xml \
+@@ -22,3 +23,45 @@ PRODUCT_COPY_FILES += \
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/mediaswcodec.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/mediaswcodec.policy \
+     $(LOCAL_PATH)/mediacodec.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/mediacodec.policy \
++    $(LOCAL_PATH)/codec2.vendor.ext.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/codec2.vendor.ext.policy \
++
++# FFmpeg codec2
++PRODUCT_PACKAGES += \
++    android.hardware.media.c2@1.2-service-ffmpeg
++
++PRODUCT_VENDOR_PROPERTIES += \
++    persist.ffmpeg_codec2.v4l2.h264=true \
++    persist.ffmpeg_codec2.v4l2.h265=true \
++    persist.ffmpeg_codec2.rank.audio=16 \
++    persist.ffmpeg_codec2.rank.video=128 \
++
++# V4L2 codec2
++PRODUCT_PACKAGES += \
++    android.hardware.media.c2@1.0-service-v4l2 \
++    libv4l2_codec2_vendor_allocator            \
++    libc2plugin_store                          \
++
++PRODUCT_SOONG_NAMESPACES += external/v4l2_codec2
++
++PRODUCT_PROPERTY_OVERRIDES += \
++    persist.v4l2_codec2.rank.decoder=256 \
++    persist.v4l2_codec2.rank.encoder=128 \
++    ro.vendor.v4l2_codec2.decode_concurrent_instances=8 \
++    ro.vendor.v4l2_codec2.encode_concurrent_instances=8 \
++
++# Codec2.0 poolMask:
++#   ION(16)
++#   GRALLOC(17)
++#   BUFFERQUEUE(18)
++#   BLOB(19)
++#   V4L2_BUFFERQUEUE(20)
++#   V4L2_BUFFERPOOL(21)
++#   SECURE_LINEAR(22)
++#   SECURE_GRAPHIC(23)
++#
++# For linear buffer allocation:
++#   If ION is chosen, then the mask should be 0xf50000
++#   If GRALLOC is chosen, then the mask should be 0xf60000
++#   If BLOB is chosen, then the mask should be 0xfc0000
++PRODUCT_PROPERTY_OVERRIDES += \
++    debug.stagefright.c2-poolmask=0x0c0000 \
+diff --git a/common/codecs/device_framework_compatibility_matrix_codec2.xml b/common/codecs/device_framework_compatibility_matrix_codec2.xml
+new file mode 100644
+index 0000000..95005fb
+--- /dev/null
++++ b/common/codecs/device_framework_compatibility_matrix_codec2.xml
+@@ -0,0 +1,20 @@
++<compatibility-matrix version="1.0" type="framework">
++    <hal format="hidl">
++        <name>android.hardware.media.c2</name>
++        <transport>hwbinder</transport>
++        <version>1.2</version>
++        <interface>
++            <name>IComponentStore</name>
++            <instance>ffmpeg</instance>
++        </interface>
++    </hal>
++    <hal format="hidl">
++        <name>android.hardware.media.c2</name>
++        <transport>hwbinder</transport>
++        <version>1.0</version>
++        <interface>
++            <name>IComponentStore</name>
++            <instance>v4l2</instance>
++        </interface>
++    </hal>
++</compatibility-matrix>
+diff --git a/common/codecs/media_codecs.xml b/common/codecs/media_codecs.xml
+new file mode 100644
+index 0000000..0db699e
+--- /dev/null
++++ b/common/codecs/media_codecs.xml
+@@ -0,0 +1,6 @@
++<MediaCodecs>
++    <Include href="media_codecs_ffmpeg_c2.xml" />
++    <Include href="media_codecs_v4l2_c2_video.xml" />
++    <Include href="media_codecs_google_c2_audio.xml" />
++    <Include href="media_codecs_google_c2_video.xml" />
++</MediaCodecs>
+diff --git a/common/codecs/media_codecs_v4l2_c2_video.xml b/common/codecs/media_codecs_v4l2_c2_video.xml
+new file mode 100644
+index 0000000..851bc5a
+--- /dev/null
++++ b/common/codecs/media_codecs_v4l2_c2_video.xml
+@@ -0,0 +1,13 @@
++<Included>
++   <Encoders>
++       <MediaCodec name="c2.v4l2.avc.encoder" type="video/avc">
++           <Limit name="size" min="32x32" max="4096x4096" />
++           <Limit name="alignment" value="2x2" />
++           <Limit name="block-size" value="32x32" />
++           <Limit name="blocks-per-second" range="1-983040" />
++           <Limit name="bitrate" range="1-40000000" />
++           <Limit name="concurrent-instances" max="8" />
++           <Limit name="performance-point-1280x720" range="30-30" />
++       </MediaCodec>
++   </Encoders>
++</Included>
+diff --git a/common/codecs/sepolicy/vendor/file_contexts b/common/codecs/sepolicy/vendor/file_contexts
+new file mode 100644
+index 0000000..6ebe142
+--- /dev/null
++++ b/common/codecs/sepolicy/vendor/file_contexts
+@@ -0,0 +1,6 @@
++# V4L2 codec2
++/vendor/bin/hw/android\.hardware\.media\.c2@1\.0-service-v4l2(.*)?              u:object_r:mediacodec_exec:s0
++/vendor/lib(64)?/libc2plugin_store\.so						u:object_r:same_process_hal_file:s0
++
++# Ffmpeg codec2
++/vendor/bin/hw/android\.hardware\.media\.c2@1\.2-service-ffmpeg(.*)?		u:object_r:mediacodec_exec:s0
+diff --git a/common/graphics/patches-minigbm/0015-rpi4-hwcodecs-constraints.patch b/common/graphics/patches-minigbm/0015-rpi4-hwcodecs-constraints.patch
+new file mode 100644
+index 0000000..02838f5
+--- /dev/null
++++ b/common/graphics/patches-minigbm/0015-rpi4-hwcodecs-constraints.patch
+@@ -0,0 +1,36 @@
++From c4571581b8c1dc2971413106f7eab26be693fd3c Mon Sep 17 00:00:00 2001
++From: Konsta <konsta09@gmail.com>
++Date: Sat, 7 Jan 2023 19:17:11 +0200
++Subject: [PATCH] gbm_mesa: add constraints for hardware video decoder &
++ encoder
++
++Change-Id: I41d2987b30f7a54b481cabb8be8ddab5c68eff63
++---
++ gbm_mesa_driver/gbm_mesa_internals.cpp | 14 ++++++++++++++
++ 1 file changed, 14 insertions(+)
++
++diff --git a/gbm_mesa_driver/gbm_mesa_internals.cpp b/gbm_mesa_driver/gbm_mesa_internals.cpp
++index 918742a..1773825 100644
++--- a/gbm_mesa_driver/gbm_mesa_internals.cpp
+++++ b/gbm_mesa_driver/gbm_mesa_internals.cpp
++@@ -382,6 +382,20 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t
++ 		size_align = 4096;
++ 	}
++ 
+++	/* RPI4 hwcodecs */
+++	if (use_flags & (BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER)) {
+++		scanout_strong = true;
+++		alloc_args.use_scanout = true;
+++		alloc_args.width = ALIGN(alloc_args.width, 32);
+++		size_align = 4096;
+++	}
+++
+++	/* Allocate blobs in CMA */
+++	if (format == DRM_FORMAT_R8) {
+++		scanout_strong = true;
+++		alloc_args.use_scanout = true;
+++	}
+++
++ 	if (alloc_args.drm_format == 0) {
++ 		/* Always use linear for spoofed format allocations. */
++ 		drv_bo_from_format(bo, alloc_args.width, alloc_args.height, format);
+-- 
+2.34.1
+
