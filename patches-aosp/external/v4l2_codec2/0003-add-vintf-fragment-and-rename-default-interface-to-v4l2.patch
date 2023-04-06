@@ -1,0 +1,82 @@
+From 0526f56990c532c03998ee47f603919015cf85d5 Mon Sep 17 00:00:00 2001
+From: Konsta <konsta09@gmail.com>
+Date: Fri, 27 Jan 2023 20:59:25 +0200
+Subject: [PATCH] add vintf fragment and rename default interface to v4l2
+
+Change-Id: I2933e67526e1f7e499b73571555fffde91757073
+---
+ README.md                                     | 20 -------------------
+ service/Android.bp                            |  2 ++
+ ...oid.hardware.media.c2@1.0-service-v4l2.xml |  7 +++++++
+ service/service.cpp                           |  2 +-
+ 4 files changed, 10 insertions(+), 21 deletions(-)
+ create mode 100644 service/android.hardware.media.c2@1.0-service-v4l2.xml
+
+diff --git a/README.md b/README.md
+index aa59a40..7b4455d 100644
+--- a/README.md
++++ b/README.md
+@@ -74,26 +74,6 @@ PRODUCT_COPY_FILES += \
+     <path_to_policy>:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/codec2.vendor.ext.policy
+ ```
+ 
+-Enable codec2 hidl in manifest.xml
+-
+-```xml
+-<manifest version="1.0" type="device">
+-    <hal format="hidl">
+-        <name>android.hardware.media.c2</name>
+-        <transport>hwbinder</transport>
+-        <version>1.0</version>
+-        <interface>
+-            <name>IComponentStore</name>
+-            <instance>default</instance>
+-        </interface>
+-        <interface>
+-            <name>IConfigurable</name>
+-            <instance>default</instance>
+-        </interface>
+-    </hal>
+-</manifest>
+-```
+-
+ Add decode and encode components in media\_codecs\_c2.xml
+ 
+ ```xml
+diff --git a/service/Android.bp b/service/Android.bp
+index c901a02..8c69ad8 100644
+--- a/service/Android.bp
++++ b/service/Android.bp
+@@ -44,4 +44,6 @@ cc_binary {
+             init_rc: ["android.hardware.media.c2@1.0-service-v4l2-64.rc"],
+         },
+     },
++
++    vintf_fragments: ["android.hardware.media.c2@1.0-service-v4l2.xml"],
+ }
+diff --git a/service/android.hardware.media.c2@1.0-service-v4l2.xml b/service/android.hardware.media.c2@1.0-service-v4l2.xml
+new file mode 100644
+index 0000000..c8a456b
+--- /dev/null
++++ b/service/android.hardware.media.c2@1.0-service-v4l2.xml
+@@ -0,0 +1,7 @@
++<manifest version="1.0" type="device">
++    <hal format="hidl">
++        <name>android.hardware.media.c2</name>
++        <transport>hwbinder</transport>
++        <fqname>@1.0::IComponentStore/v4l2</fqname>
++    </hal>
++</manifest>
+diff --git a/service/service.cpp b/service/service.cpp
+index 616e641..8c4089f 100644
+--- a/service/service.cpp
++++ b/service/service.cpp
+@@ -46,7 +46,7 @@ int main(int /* argc */, char** /* argv */) {
+                 new utils::ComponentStore(android::V4L2ComponentStore::Create()));
+         if (store == nullptr) {
+             ALOGE("Cannot create Codec2's V4L2 IComponentStore service.");
+-        } else if (store->registerAsService("default") != android::OK) {
++        } else if (store->registerAsService("v4l2") != android::OK) {
+             ALOGE("Cannot register Codec2's IComponentStore service.");
+         } else {
+             ALOGI("Codec2's IComponentStore service created.");

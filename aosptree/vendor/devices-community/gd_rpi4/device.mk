@@ -56,3 +56,6 @@ PRODUCT_VENDOR_PROPERTIES +=    \
 
 # It is the only way to set ro.hwui.use_vulkan=true
 #TARGET_USES_VULKAN = true
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.gralloc.minigbm.backend=gbm_mesa \

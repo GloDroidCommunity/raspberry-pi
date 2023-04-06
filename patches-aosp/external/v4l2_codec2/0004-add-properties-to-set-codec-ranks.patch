@@ -1,0 +1,43 @@
+From d1102c667205bc6d30f5b1bb516c1389bc4e2fd9 Mon Sep 17 00:00:00 2001
+From: Konsta <konsta09@gmail.com>
+Date: Fri, 27 Jan 2023 22:21:23 +0200
+Subject: [PATCH] add properties to set codec ranks
+
+Change-Id: Ic55e3a460e768ef86bb53e88df740d5e14ea3e67
+---
+ components/V4L2ComponentStore.cpp | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/components/V4L2ComponentStore.cpp b/components/V4L2ComponentStore.cpp
+index 4004ce5..6e991d3 100644
+--- a/components/V4L2ComponentStore.cpp
++++ b/components/V4L2ComponentStore.cpp
+@@ -5,6 +5,8 @@
+ //#define LOG_NDEBUG 0
+ #define LOG_TAG "V4L2ComponentStore"
+ 
++#include <android-base/properties.h>
++
+ #include <v4l2_codec2/components/V4L2ComponentStore.h>
+ 
+ #include <stdint.h>
+@@ -22,7 +24,8 @@
+ 
+ namespace android {
+ namespace {
+-const uint32_t kComponentRank = 0x80;
++uint32_t kDecoderRank = ::android::base::GetUintProperty("persist.v4l2_codec2.rank.decoder", 0x80u);
++uint32_t kEncoderRank = ::android::base::GetUintProperty("persist.v4l2_codec2.rank.encoder", 0x80u);
+ 
+ std::string getMediaTypeFromComponentName(const std::string& name) {
+     if (name == V4L2ComponentName::kH264Decoder || name == V4L2ComponentName::kH264SecureDecoder ||
+@@ -191,7 +194,8 @@ std::shared_ptr<const C2Component::Traits> V4L2ComponentStore::GetTraits(const C
+     auto traits = std::make_shared<C2Component::Traits>();
+     traits->name = name;
+     traits->domain = C2Component::DOMAIN_VIDEO;
+-    traits->rank = kComponentRank;
++    traits->rank = V4L2ComponentName::isEncoder(name.c_str()) ? kEncoderRank
++                                                              : kDecoderRank;
+     traits->mediaType = getMediaTypeFromComponentName(name);
+     traits->kind = V4L2ComponentName::isEncoder(name.c_str()) ? C2Component::KIND_ENCODER
+                                                               : C2Component::KIND_DECODER;
