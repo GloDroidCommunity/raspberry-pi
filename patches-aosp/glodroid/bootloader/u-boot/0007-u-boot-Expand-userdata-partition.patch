@@ -1,0 +1,69 @@
+From 52f9f957c1454e43abad397d08e915a938169583 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Micha=C5=82=20Gapi=C5=84ski?= <mike@gapinski.eu>
+Date: Fri, 7 Apr 2023 17:35:52 +0200
+Subject: [PATCH 1/1] u-boot: Expand userdata partition. Fixes unallocated
+ space issue when single image install method is used
+
+---
+ platform/common/uboot.config  |  1 +
+ platform/uboot/bootscript.cpp | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/platform/common/uboot.config b/platform/common/uboot.config
+index 629392f..13e1cc3 100644
+--- a/platform/common/uboot.config
++++ b/platform/common/uboot.config
+@@ -4,6 +4,7 @@ CONFIG_CMD_BCB=y
+ CONFIG_CMD_ABOOTIMG=y
+ CONFIG_CMD_ADTIMG=y
+ CONFIG_CMD_GPT=y
++CONFIG_CMD_GPT_RENAME=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_FUNCTION_FASTBOOT=y
+ CONFIG_CMD_FASTBOOT=y
+diff --git a/platform/uboot/bootscript.cpp b/platform/uboot/bootscript.cpp
+index 0c04f52..a16b387 100644
+--- a/platform/uboot/bootscript.cpp
++++ b/platform/uboot/bootscript.cpp
+@@ -169,8 +169,38 @@ FUNC_BEGIN(bootcmd_block)
+  mmc read \$dtboaddr \$dtbo_start \$dtbo_size
+ FUNC_END()
+ 
++FUNC_BEGIN(check_userdata_size)
++  part start mmc ${mmc_bootdev} userdata userdata_start
++  part size  mmc ${mmc_bootdev} userdata userdata_size
++  mmc dev ${mmc_bootdev}
++  mmc info
++  setexpr userdata_end "$userdata_start + $userdata_size - 1"
++  if test ${userdata_end} != ${mmc_dev.userblocks};
++  then
++    echo "Warning: Unallocated space at the end of the drive detected!";
++    run expand_userdata_partition ;
++  fi;
++FUNC_END()
++
++FUNC_BEGIN(expand_userdata_partition)
++  part start mmc ${mmc_bootdev} userdata userdata_start
++  part size  mmc ${mmc_bootdev} userdatja userdata_size
++  mmc dev ${mmc_bootdev}
++  mmc info
++  setexpr userdata_end "$userdata_start + $userdata_size - 1"
++  if test ${userdata_end} != ${mmc_dev.userblocks};
++  then
++    echo "Expanding userdata partition to fill the entire drive...";
++    gpt read mmc ${mmc_bootdev} current_layout
++    setexpr new_layout gsub "name=userdata,start=[^,]*,size=[^,]*,uuid" "name=userdata,start=[^,]*,size=-,uuid" ${current_layout}
++    gpt write mmc ${mmc_bootdev} ${new_layout}
++    echo "The userdata partition has been expanded.";
++  fi;
++FUNC_END()
++
+ FUNC_BEGIN(bootcmd)
+  run bootcmd_prepare_env ;
++ run check_userdata_size ;
+  run bootcmd_block ;
+  run bootcmd_start ;
+ FUNC_END()
+-- 
+2.34.1
+
