@@ -1,0 +1,25 @@
+From dbc50df17bd18d5f69df3ece60915846eb839ad8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Micha=C5=82=20Gapi=C5=84ski?= <mike@gapinski.eu>
+Date: Sat, 8 Apr 2023 19:29:31 +0200
+Subject: [PATCH] Compress the sdcard image
+
+---
+ platform/tools/gensdimg.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/platform/tools/gensdimg.sh b/platform/tools/gensdimg.sh
+index 1b954db..2464a95 100755
+--- a/platform/tools/gensdimg.sh
++++ b/platform/tools/gensdimg.sh
+@@ -101,6 +101,8 @@ gen_sd() {
+     if [ "$PLATFORM" = "broadcom" ]; then
+         modify_for_rpi
+     fi
++
++    tar -cvzf $SDIMG.tar.gz $SDIMG
+ }
+ 
+ gen_deploy() {
+-- 
+2.34.1
+
