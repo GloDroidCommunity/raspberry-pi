@@ -1,7 +1,7 @@
 From 618cd2bb8e1961b25142b0c19132899dbdaf8379 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Micha=C5=82=20Gapi=C5=84ski?= <mike@gapinski.eu>
 Date: Sat, 8 Apr 2023 18:07:22 +0200
-Subject: [PATCH 1/1] Increase super size to ensure device updateability
+Subject: [PATCH 1/1] RPI4: Increase super size to ensure device updateability
 
 ---
  common/base/board.mk          | 4 ++--
