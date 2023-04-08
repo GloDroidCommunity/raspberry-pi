@@ -7,8 +7,8 @@ Subject: [PATCH 1/1] u-boot: Expand userdata partition. Fixes unallocated
 ---
  platform/common/uboot.config  |  1 +
  platform/tools/gensdimg.sh    |  4 ++--
- platform/uboot/bootscript.cpp | 21 +++++++++++++++++++++
- 3 files changed, 24 insertions(+), 2 deletions(-)
+ platform/uboot/bootscript.cpp | 19 +++++++++++++++++++
+ 3 files changed, 22 insertions(+), 2 deletions(-)
 
 diff --git a/platform/common/uboot.config b/platform/common/uboot.config
 index 629392f..13e1cc3 100644
@@ -67,8 +67,6 @@ index 0c04f52..c25d207 100644
 +    setexpr final_layout gsub "name=userdata,start=[^,]*,size=[^,]*,uuid" "name=userdata,start=[^,]*,size=-,uuid" ${expanded_layout}
 +    gpt write mmc ${mmc_bootdev} ${final_layout}
 +    echo "The userdata partition has been expanded.";
-+  else
-+    echo "The userdata_placeholder partition does not exist. No action required.";
 +  fi;
 +FUNC_END()
 +
