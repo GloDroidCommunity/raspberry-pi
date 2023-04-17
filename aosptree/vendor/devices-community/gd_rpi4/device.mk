@@ -4,6 +4,9 @@
 
 $(call inherit-product, glodroid/configuration/common/device-common.mk)
 
+# Audio
+$(call inherit-product, glodroid/devices-community/gd_rpi4/audio/device.mk)
+
 # Firmware
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/firmware/brcmfmac43455-sdio.clm_blob:$(TARGET_COPY_OUT_VENDOR)/etc/firmware/brcm/brcmfmac43455-sdio.clm_blob \
@@ -16,17 +19,12 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/firmware/BCM4345C0.hcd:$(TARGET_COPY_OUT_VENDOR)/etc/firmware/brcm/BCM4345C0.hcd \
     $(LOCAL_PATH)/firmware/BCM4345C5.hcd:$(TARGET_COPY_OUT_VENDOR)/etc/firmware/brcm/BCM4345C5.hcd \
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/etc/audio.rpi4.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio.rpi4.xml \
-    $(LOCAL_PATH)/etc/audio.rpi400.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio.rpi400.xml \
-
 # Disable suspend. During running some VTS device suspends, which sometimes causes kernel to crash in WIFI driver and reboot.
 PRODUCT_COPY_FILES += \
     glodroid/configuration/common/no_suspend.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/no_suspend.rpi4.rc \
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/etc/power.rpi4.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/power.rpi4.rc \
-    $(LOCAL_PATH)/etc/snd.rpi4.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/snd.rpi4.rc     \
     $(LOCAL_PATH)/etc/uevent.device.rc:$(TARGET_COPY_OUT_VENDOR)/etc/uevent.device.rc \
 
 # drm_hwcomposer

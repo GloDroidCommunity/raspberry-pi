@@ -1,0 +1,326 @@
+From 7dbf4cca5f99d492b6a20cab564ef61427cbc0a3 Mon Sep 17 00:00:00 2001
+From: Chih-Wei Huang <cwhuang@linux.org.tw>
+Date: Tue, 15 Jun 2021 00:31:29 +0800
+Subject: [PATCH 2/2] Android: Add blueprint and config files
+
+Based on [1]
+[1]: https://github.com/raspberry-vanilla/android_external_alsa-utils/commit/cf6685dc333ba348d72f4f548164096705f3eb94
+
+Change-Id: I912cb91e5442cae48ca354dc1f675f73c7fdc255
+---
+ .gitignore        |   1 -
+ Android.bp        | 106 +++++++++++++++++++++++++++++
+ android/aconfig.h | 167 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/version.h |   1 +
+ 4 files changed, 274 insertions(+), 1 deletion(-)
+ create mode 100644 Android.bp
+ create mode 100644 android/aconfig.h
+ create mode 100644 include/version.h
+
+diff --git a/.gitignore b/.gitignore
+index 5e0a3b7..c34e802 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -61,7 +61,6 @@ topology/alsatplg
+ 
+ include/aconfig.h*
+ include/stamp-*
+-include/version.h
+ po/Makefile*
+ po/POTFILES
+ po/Rules-quot
+diff --git a/Android.bp b/Android.bp
+new file mode 100644
+index 0000000..99c490a
+--- /dev/null
++++ b/Android.bp
+@@ -0,0 +1,106 @@
++//
++// Copyright (C) 2019-2021 The Android-x86 Open Source Project
++// Copyright (C) 2023 KonstaKANG
++//
++// Licensed under the GNU General Public License Version 2 or later.
++// You may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.gnu.org/licenses/gpl.html
++//
++
++cc_library_headers {
++    name: "alsa_utils_headers",
++    vendor: true,
++    export_include_dirs: [
++       "android",
++       "include",
++    ],
++}
++
++cc_defaults {
++    name: "alsa_utils_defaults",
++    vendor: true,
++    header_libs: ["alsa_utils_headers"],
++    shared_libs: ["libasound"],
++    cflags: [
++        "-Wno-absolute-value",
++        "-Wno-enum-conversion",
++        "-Wno-missing-field-initializers",
++        "-Wno-parentheses",
++        "-Wno-pointer-arith",
++        "-Wno-sign-compare",
++        "-Wno-unused-parameter",
++        "-Wno-unused-variable",
++    ],
++}
++
++cc_binary {
++    name: "alsa_amixer",
++    srcs: [
++        "amixer/amixer.c",
++        "amixer/volume_mapping.c",
++    ],
++    cflags: [
++        "-D_GNU_SOURCE",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
++
++cc_binary {
++    name: "alsa_aplay",
++    srcs: [
++        "aplay/aplay.c",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
++
++cc_binary {
++    name: "alsa_arecord",
++    srcs: [
++        "aplay/aplay.c",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
++
++cc_binary {
++    name: "alsa_ctl",
++    srcs: [
++        "alsactl/alsactl.c",
++        "alsactl/clean.c",
++        "alsactl/daemon.c",
++        "alsactl/info.c",
++        "alsactl/init_parse.c",
++        "alsactl/init_ucm.c",
++        "alsactl/lock.c",
++        "alsactl/monitor.c",
++        "alsactl/state.c",
++        "alsactl/utils.c",
++    ],
++    cflags: [
++        "-DSYS_ASOUNDRC=\"/data/local/tmp/asound.state\"",
++        "-DSYS_LOCKPATH=\"/data/local/tmp/\"",
++        "-DSYS_LOCKFILE=\"asound.state.lock\"",
++        "-DSYS_PIDFILE=\"/data/local/tmp/alsactl.pid\"",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
++
++cc_binary {
++    name: "alsa_ucm",
++    srcs: [
++        "alsaucm/dump.c",
++        "alsaucm/usecase.c",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
++
++cc_binary {
++    name: "alsa_loop",
++    srcs: [
++        "alsaloop/alsaloop.c",
++        "alsaloop/control.c",
++        "alsaloop/pcmjob.c",
++    ],
++    defaults: ["alsa_utils_defaults"],
++}
+diff --git a/android/aconfig.h b/android/aconfig.h
+new file mode 100644
+index 0000000..754ed72
+--- /dev/null
++++ b/android/aconfig.h
+@@ -0,0 +1,167 @@
++/* include/aconfig.h.  Generated from aconfig.h.in by configure.  */
++/* include/aconfig.h.in.  Generated from configure.ac by autoheader.  */
++
++/* directory containing alsa configuration */
++#define DATADIR "/system/usr/share/alsa"
++
++/* Define to 1 if translation of program messages to the user's native
++   language is requested. */
++/* #undef ENABLE_NLS */
++
++/* Define if curses-based programs can show translated messages. */
++/* #undef ENABLE_NLS_IN_CURSES */
++
++/* Define to 1 if you have the <alsa/mixer.h> header file. */
++#define HAVE_ALSA_MIXER_H 1
++
++/* Define to 1 if you have the <alsa/pcm.h> header file. */
++#define HAVE_ALSA_PCM_H 1
++
++/* Define to 1 if you have the <alsa/rawmidi.h> header file. */
++#define HAVE_ALSA_RAWMIDI_H 1
++
++/* Define to 1 if you have the <alsa/seq.h> header file. */
++#define HAVE_ALSA_SEQ_H 1
++
++/* Define to 1 if you have the <alsa/topology.h> header file. */
++#define HAVE_ALSA_TOPOLOGY_H 1
++
++/* Define to 1 if you have the <alsa/use-case.h> header file. */
++#define HAVE_ALSA_USE_CASE_H 1
++
++/* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
++   CoreFoundation framework. */
++/* #undef HAVE_CFLOCALECOPYCURRENT */
++
++/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
++   the CoreFoundation framework. */
++/* #undef HAVE_CFPREFERENCESCOPYAPPVALUE */
++
++/* Have clock gettime */
++#define HAVE_CLOCK_GETTIME 1
++
++/* Have curses set_escdelay */
++#define HAVE_CURSES_ESCDELAY 1
++
++/* Define if the GNU dcgettext() function is already present or preinstalled.
++   */
++/* #undef HAVE_DCGETTEXT */
++
++/* Define to 1 if you have the <form.h> header file. */
++#define HAVE_FORM_H 1
++
++/* Define if the GNU gettext() function is already present or preinstalled. */
++/* #undef HAVE_GETTEXT */
++
++/* Define if you have the iconv() function and it works. */
++/* #undef HAVE_ICONV */
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the `asound' library (-lasound). */
++#define HAVE_LIBASOUND 1
++
++/* Define to 1 if you have the `fftw3f' library (-lfftw3f). */
++/* #undef HAVE_LIBFFTW3F */
++
++/* Define to 1 if you have the `m' library (-lm). */
++#define HAVE_LIBM 1
++
++/* Define to 1 if you have the `pthread' library (-lpthread). */
++#define HAVE_LIBPTHREAD 1
++
++/* Have librt */
++/* #undef HAVE_LIBRT */
++
++/* Define to 1 if you have the `tinyalsa' library (-ltinyalsa). */
++/* #undef HAVE_LIBTINYALSA */
++
++/* Define if Linux kernel supports memfd_create system call */
++#define HAVE_MEMFD_CREATE 1
++
++/* Define to 1 if you have the <memory.h> header file. */
++#define HAVE_MEMORY_H 1
++
++/* Define to 1 if you have the <menu.h> header file. */
++#define HAVE_MENU_H 1
++
++/* Define to 1 if you have the <panel.h> header file. */
++#define HAVE_PANEL_H 1
++
++/* Define to 1 if you have the <samplerate.h> header file. */
++/* #undef HAVE_SAMPLERATE_H */
++
++/* alsa-lib supports snd_seq_client_info_get_card */
++#define HAVE_SEQ_CLIENT_INFO_GET_CARD 1
++
++/* alsa-lib supports snd_seq_client_info_get_pid */
++#define HAVE_SEQ_CLIENT_INFO_GET_PID 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Name of package */
++#define PACKAGE "alsa-utils"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT ""
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "alsa-utils"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "alsa-utils"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL ""
++
++/* directory containing sample data */
++#define SOUNDSDIR "/system/usr/share/sounds/alsa"
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
++#define TIME_WITH_SYS_TIME 1
++
++/* Define if FFADO library is available */
++/* #undef WITH_FFADO */
++
++/* Enable large inode numbers on Mac OS X 10.5.  */
++#ifndef _DARWIN_USE_64_BIT_INODE
++# define _DARWIN_USE_64_BIT_INODE 1
++#endif
++
++/* Number of bits in a file offset, on hosts where this is settable. */
++#define _FILE_OFFSET_BITS 64
++
++/* Define for large files, on AIX-style hosts. */
++/* #undef _LARGE_FILES */
++
++/* Define to empty if `const' does not conform to ANSI C. */
++/* #undef const */
++
++/* Define to `__inline__' or `__inline' if that's what the C compiler
++   calls it, or to nothing if 'inline' is not supported under any name.  */
++#ifndef __cplusplus
++/* #undef inline */
++#endif
+diff --git a/include/version.h b/include/version.h
+new file mode 100644
+index 0000000..d20860c
+--- /dev/null
++++ b/include/version.h
+@@ -0,0 +1 @@
++#define SND_UTIL_VERSION_STR "1.2.8"
+-- 
+2.34.1
+

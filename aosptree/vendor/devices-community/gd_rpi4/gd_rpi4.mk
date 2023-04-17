@@ -38,3 +38,5 @@ SYSFS_MMC0_PATH := emmc2bus/fe340000.mmc
 RPI_CONFIG := $(LOCAL_PATH)/boot/config.txt
 
 $(call inherit-product, $(LOCAL_PATH)/device.mk)
+
+GD_NO_DEFAULT_AUDIO := true

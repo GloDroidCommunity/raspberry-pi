@@ -1,0 +1,26 @@
+From ab03f895313219d08b98de0d31ac5754e45c7807 Mon Sep 17 00:00:00 2001
+From: Chih-Wei Huang <cwhuang@linux.org.tw>
+Date: Fri, 15 Mar 2019 19:22:09 +0800
+Subject: [PATCH 1/2] amixer: remove unnecessary prefix ../include/
+
+All other files include "version.h" don't have the prefix ../include/.
+It's unnecessary and causes trouble to Android porting.
+
+Signed-off-by: Chih-Wei Huang <cwhuang@linux.org.tw>
+---
+ amixer/amixer.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/amixer/amixer.h b/amixer/amixer.h
+index af97628..2853d9e 100644
+--- a/amixer/amixer.h
++++ b/amixer/amixer.h
+@@ -18,4 +18,4 @@
+  *
+  */
+ 
+-#include "../include/version.h"
++#include "version.h"
+-- 
+2.34.1
+
