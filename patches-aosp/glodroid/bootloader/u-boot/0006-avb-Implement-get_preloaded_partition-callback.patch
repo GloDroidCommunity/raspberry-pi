@@ -1,24 +1,24 @@
-From 5d54fa42856a82d583e50ea5de6fa264eb72b92c Mon Sep 17 00:00:00 2001
+From 972b100163714a361de9e75d6f9bc1058805385c Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Thu, 23 Nov 2023 03:47:48 +0200
-Subject: [PATCH 04/11] avb: Implement get_preloaded_partition callback
+Subject: [PATCH 6/7] avb: Implement get_preloaded_partition callback
 
 AVB can reuse already loaded images instead of loading them
 from the disk.
 
-Implement get_preloaded_partition so that it uses the 'abootimg load'
-command result environment variables to find the right partition in RAM.
+The get_preloaded_partition now looks for the env. variables
+set by the 'abootimg load' to find the correct partition in RAM.
 
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
 ---
- common/avb_verify.c | 56 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ common/avb_verify.c | 53 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
 diff --git a/common/avb_verify.c b/common/avb_verify.c
-index 48ba8db51e..51b752f3ba 100644
+index cff9117d92..d2626e8844 100644
 --- a/common/avb_verify.c
 +++ b/common/avb_verify.c
-@@ -7,6 +7,7 @@
+@@ -6,6 +6,7 @@
  #include <avb_verify.h>
  #include <blk.h>
  #include <cpu_func.h>
@@ -26,7 +26,7 @@ index 48ba8db51e..51b752f3ba 100644
  #include <image.h>
  #include <malloc.h>
  #include <part.h>
-@@ -539,6 +540,58 @@ static AvbIOResult read_from_partition(AvbOps *ops,
+@@ -595,6 +596,55 @@ static AvbIOResult read_from_partition(AvbOps *ops,
  			   num_bytes, buffer, out_num_read, IO_READ);
  }
  
@@ -48,16 +48,13 @@ index 48ba8db51e..51b752f3ba 100644
 + *      AVB_IO_RESULT_OK, if partition was found or was not found
 + *
 + */
-+static AvbIOResult get_preloaded_partition(AvbOps* ops,
-+                                           const char* partition,
-+                                           size_t num_bytes,
-+                                           uint8_t** out_pointer,
-+                                           size_t* out_num_bytes_preloaded)
++static AvbIOResult get_preloaded_partition(AvbOps *ops, const char *partition, size_t num_bytes,
++					   uint8_t **out_pointer, size_t *out_num_bytes_preloaded)
 +{
 +	size_t partition_start = 0;
 +	size_t partition_size = 0;
-+
 +	char env_name[64];
++
 +	sprintf(env_name, "abootimg_%s_ptr", partition);
 +	partition_start = env_get_hex(env_name, 0);
 +
@@ -85,7 +82,7 @@ index 48ba8db51e..51b752f3ba 100644
  /**
   * write_to_partition() - writes N bytes to a partition identified by a string
   * name
-@@ -988,6 +1041,9 @@ AvbOps *avb_ops_alloc(int boot_device)
+@@ -1043,6 +1093,9 @@ AvbOps *avb_ops_alloc(int boot_device)
  	ops_data->ops.user_data = ops_data;
  
  	ops_data->ops.read_from_partition = read_from_partition;
@@ -96,5 +93,5 @@ index 48ba8db51e..51b752f3ba 100644
  	ops_data->ops.validate_vbmeta_public_key = validate_vbmeta_public_key;
  	ops_data->ops.read_rollback_index = read_rollback_index;
 -- 
-2.39.2
+2.40.1
 

@@ -1,7 +1,7 @@
-From 232364b099c83b7d831a1f0493ec67dff9fe4c41 Mon Sep 17 00:00:00 2001
+From 2b6247e78f3be0a86816e94f296ffd8205de58d3 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Tue, 21 Nov 2023 12:44:08 +0200
-Subject: [PATCH 02/11] abootimg: Add init_boot image support
+Subject: [PATCH 2/7] abootimg: Add init_boot image support
 
 Quote from [1]:
 
@@ -12,22 +12,23 @@ This change leaves the boot image with only the GKI kernel."
 [1]: https://source.android.com/docs/core/architecture/partitions/generic-boot
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
 ---
- boot/image-board.c |  4 +++-
+ boot/image-board.c |  5 ++++-
  cmd/abootimg.c     | 26 +++++++++++++++++++++-----
  include/image.h    |  7 +++++++
- 3 files changed, 31 insertions(+), 6 deletions(-)
+ 3 files changed, 32 insertions(+), 6 deletions(-)
 
 diff --git a/boot/image-board.c b/boot/image-board.c
-index d500da1b4b..cb225529d2 100644
+index 75f6906cd5..715654ff01 100644
 --- a/boot/image-board.c
 +++ b/boot/image-board.c
-@@ -429,9 +429,11 @@ static int select_ramdisk(struct bootm_headers *images, const char *select, u8 a
+@@ -414,9 +414,12 @@ static int select_ramdisk(struct bootm_headers *images, const char *select, u8 a
  			int ret;
  			if (IS_ENABLED(CONFIG_CMD_ABOOTIMG)) {
  				void *boot_img = map_sysmem(get_abootimg_addr(), 0);
 +				void *init_boot_img = map_sysmem(get_ainit_bootimg_addr(), 0);
  				void *vendor_boot_img = map_sysmem(get_avendor_bootimg_addr(), 0);
-+				void *ramdisk_img = (init_boot_img == -1) ? boot_img : init_boot_img;
++				void *ramdisk_img = (init_boot_img == -1) ? boot_img :
++									    init_boot_img;
  
 -				ret = android_image_get_ramdisk(boot_img, vendor_boot_img,
 +				ret = android_image_get_ramdisk(ramdisk_img, vendor_boot_img,
@@ -115,10 +116,10 @@ index 2653b555b1..a5321bab6a 100644
  	"      ($loadaddr is used by default)\n"
  	"abootimg dump dtb\n"
 diff --git a/include/image.h b/include/image.h
-index 01a6787d21..e6dc875cc3 100644
+index 21de70f0c9..a1064f300a 100644
 --- a/include/image.h
 +++ b/include/image.h
-@@ -1894,6 +1894,13 @@ bool is_android_vendor_boot_image_header(const void *vendor_boot_img);
+@@ -1970,6 +1970,13 @@ bool is_android_vendor_boot_image_header(const void *vendor_boot_img);
   */
  ulong get_abootimg_addr(void);
  
@@ -133,5 +134,5 @@ index 01a6787d21..e6dc875cc3 100644
   * get_avendor_bootimg_addr() - Get Android vendor boot image address
   *
 -- 
-2.39.2
+2.40.1
 

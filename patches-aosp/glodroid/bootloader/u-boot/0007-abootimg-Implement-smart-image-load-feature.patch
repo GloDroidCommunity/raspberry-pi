@@ -1,23 +1,23 @@
-From 6561561e086ff1cfbaf410ecee20ea34c62ffdf5 Mon Sep 17 00:00:00 2001
+From 17522b845624342fae18c86ecc25b3dbb495b191 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Sat, 25 Nov 2023 08:16:31 +0200
-Subject: [PATCH 05/11] abootimg: Implement smart image load feature
+Subject: [PATCH 7/7] abootimg: Implement smart image load feature
 
-Load only part of the boot partition that contains valuable information.
-This significantly speeds up the boot time.
+Load only part of the boot partition that contains valuable
+information, thus improving the boot time.
 
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
 ---
- boot/image-android.c | 68 ++++++++++++++++++++++++++++++++++++++++++++
- cmd/abootimg.c       | 38 ++++++++++++++++++++++---
+ boot/image-android.c | 70 ++++++++++++++++++++++++++++++++++++++++++++
+ cmd/abootimg.c       | 40 ++++++++++++++++++++++---
  include/image.h      | 12 ++++++++
- 3 files changed, 114 insertions(+), 4 deletions(-)
+ 3 files changed, 118 insertions(+), 4 deletions(-)
 
 diff --git a/boot/image-android.c b/boot/image-android.c
-index da8003f370..499eae9bcd 100644
+index da8003f370..d00a896a40 100644
 --- a/boot/image-android.c
 +++ b/boot/image-android.c
-@@ -204,6 +204,74 @@ bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
+@@ -204,6 +204,76 @@ bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
  	return true;
  }
  
@@ -36,10 +36,12 @@ index da8003f370..499eae9bcd 100644
 +	int version, size;
 +
 +	if (is_android_boot_image_header(hdr_addr)) {
-+		version = ((struct andr_boot_img_hdr_v0 *)hdr_addr)->header_version;
++		const struct andr_boot_img_hdr_v0 *hdr = hdr_addr;
 +
++		version = ((struct andr_boot_img_hdr_v0 *)hdr_addr)->header_version;
 +		if (version > 2) {
 +			const struct andr_boot_img_hdr_v3 *hdr = hdr_addr;
++
 +			size = ALIGN(hdr->header_size, ANDR_GKI_PAGE_SIZE);
 +			size += ALIGN(hdr->kernel_size, ANDR_GKI_PAGE_SIZE);
 +			size += ALIGN(hdr->ramdisk_size, ANDR_GKI_PAGE_SIZE);
@@ -50,7 +52,6 @@ index da8003f370..499eae9bcd 100644
 +			return size;
 +		}
 +
-+		const struct andr_boot_img_hdr_v0 *hdr = hdr_addr;
 +		size = hdr->page_size;
 +		size += ALIGN(hdr->kernel_size, hdr->page_size);
 +		size += ALIGN(hdr->ramdisk_size, hdr->page_size);
@@ -66,6 +67,8 @@ index da8003f370..499eae9bcd 100644
 +	}
 +
 +	if (is_android_vendor_boot_image_header(hdr_addr)) {
++		const struct andr_vnd_boot_img_hdr *hdr = hdr_addr;
++
 +		version = ((struct andr_vnd_boot_img_hdr *)hdr_addr)->header_version;
 +		if (version < 3) {
 +			printf("Vendor boot image header version %d is not supported\n", version);
@@ -73,7 +76,6 @@ index da8003f370..499eae9bcd 100644
 +			return 0;
 +		}
 +
-+		const struct andr_vnd_boot_img_hdr *hdr = hdr_addr;
 +		size = ALIGN(hdr->header_size, hdr->page_size);
 +		size += ALIGN(hdr->vendor_ramdisk_size, hdr->page_size);
 +		size += ALIGN(hdr->dtb_size, hdr->page_size);
@@ -93,22 +95,24 @@ index da8003f370..499eae9bcd 100644
  {
  	/*
 diff --git a/cmd/abootimg.c b/cmd/abootimg.c
-index 808c9c4941..7c450a3b2d 100644
+index 808c9c4941..fe7c5c5e2c 100644
 --- a/cmd/abootimg.c
 +++ b/cmd/abootimg.c
-@@ -182,6 +182,33 @@ static int abootimg_get_dtb(int argc, char *const argv[])
+@@ -182,6 +182,35 @@ static int abootimg_get_dtb(int argc, char *const argv[])
  	return CMD_RET_USAGE;
  }
  
 +static int abootimg_smart_load(struct blk_desc *desc, struct disk_partition *info, void *addr)
 +{
-+	int ret = blk_dread(desc, info->start, 4096 / info->blksz, addr);
++	int ret, size;
++
++	ret = blk_dread(desc, info->start, 4096 / info->blksz, addr);
 +	if (ret < 0) {
 +		printf("Error: Failed to read partition\n");
 +		return CMD_RET_FAILURE;
 +	}
 +
-+	int size = android_image_get_valuable_size(addr);
++	size = android_image_get_valuable_size(addr);
 +	if (size == 0)
 +		return 0;
 +
@@ -124,13 +128,13 @@ index 808c9c4941..7c450a3b2d 100644
 +	       (int)DIV_ROUND_UP(size, 1024 * 1024),
 +	       (int)DIV_ROUND_UP(info->size * info->blksz, 1024 * 1024));
 +
-+        return size;
++	return size;
 +}
 +
  static int do_abootimg_addr(struct cmd_tbl *cmdtp, int flag, int argc,
  			    char *const argv[])
  {
-@@ -299,10 +326,13 @@ static int do_abootimg_load(struct cmd_tbl *cmdtp, int flag, int argc,
+@@ -299,10 +328,13 @@ static int do_abootimg_load(struct cmd_tbl *cmdtp, int flag, int argc,
  		return CMD_RET_FAILURE;
  	}
  
@@ -149,10 +153,10 @@ index 808c9c4941..7c450a3b2d 100644
  
  	sprintf(buf, "abootimg_%s_ptr", argv[3]);
 diff --git a/include/image.h b/include/image.h
-index e6dc875cc3..c246222cf8 100644
+index a1064f300a..b1fd6b3149 100644
 --- a/include/image.h
 +++ b/include/image.h
-@@ -1750,6 +1750,18 @@ struct andr_image_data;
+@@ -1826,6 +1826,18 @@ struct andr_image_data;
  bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
  			    struct andr_image_data *data);
  
@@ -172,5 +176,5 @@ index e6dc875cc3..c246222cf8 100644
  
  /**
 -- 
-2.39.2
+2.40.1
 
