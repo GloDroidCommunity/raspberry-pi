@@ -1,0 +1,45 @@
+From 9638e89a2b6ee6d0036a84282ea2f6a890c173cc Mon Sep 17 00:00:00 2001
+From: adufftpc <aduff@ya.ru>
+Date: Wed, 3 Jul 2024 14:18:07 +0000
+Subject: [PATCH 5/5] DTBOs added to boot/ changed from u-boot prebuilts to the
+ ones built within Kernel
+
+---
+ platform/uboot/uboot.mk | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/platform/uboot/uboot.mk b/platform/uboot/uboot.mk
+index 8f1338b..49a25e8 100644
+--- a/platform/uboot/uboot.mk
++++ b/platform/uboot/uboot.mk
+@@ -194,6 +194,7 @@ ifeq ($(PRODUCT_BOARD_PLATFORM),broadcom)
+ KERNEL_OUT    := $(PRODUCT_OUT)/obj/GLODROID/KERNEL
+ KERNEL_TARGET := $(KERNEL_OUT)/install/kernel
+ DTBS_DIR      := $(KERNEL_OUT)/install/dtbs
++DTB_OVLS_DIR  := $(DTBS_DIR)/overlays
+ BOOT_FILES := \
+     $(RPI_FIRMWARE_DIR)/boot/bootcode.bin \
+     $(RPI_FIRMWARE_DIR)/boot/start_x.elf \
+@@ -204,9 +205,7 @@ BOOT_FILES := \
+     $(DTBS_DIR)/broadcom/bcm2711-rpi-400.dtb \
+     $(DTBS_DIR)/broadcom/bcm2711-rpi-cm4.dtb \
+ 
+-OVERLAY_FILES := $(sort $(shell find -L $(RPI_FIRMWARE_DIR)/boot/overlays))
+-
+-$(PRODUCT_OUT)/bootloader-sd.img: $(UBOOT_BINARY) $(OVERLAY_FILES) $(ATF_BINARY) $(RPI_CONFIG) $(KERNEL_TARGET)
++$(PRODUCT_OUT)/bootloader-sd.img: $(UBOOT_BINARY) $(ATF_BINARY) $(RPI_CONFIG) $(KERNEL_TARGET)
+ 	dd if=/dev/null of=$@ bs=1 count=1 seek=$$(( 128 * 1024 * 1024 - 256 * 512 ))
+ 	/sbin/mkfs.vfat -F 32 -n boot $@
+ 	/usr/bin/mcopy -i $@ $(UBOOT_BINARY) ::$(notdir $(UBOOT_BINARY))
+@@ -214,7 +213,7 @@ $(PRODUCT_OUT)/bootloader-sd.img: $(UBOOT_BINARY) $(OVERLAY_FILES) $(ATF_BINARY)
+ 	/usr/bin/mcopy -i $@ $(RPI_CONFIG) ::$(notdir $(RPI_CONFIG))
+ 	/usr/bin/mcopy -i $@ $(BOOT_FILES) ::
+ 	/usr/bin/mmd -i $@ ::overlays
+-	/usr/bin/mcopy -i $@ $(OVERLAY_FILES) ::overlays/
++	/usr/bin/mcopy -i $@ $(DTB_OVLS_DIR)/* ::overlays/
+ endif
+ 
+ ifeq ($(PRODUCT_BOARD_PLATFORM),amlogic)
+-- 
+2.34.1
+
