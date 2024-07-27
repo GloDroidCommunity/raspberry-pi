@@ -1,7 +1,7 @@
-From be02edf9dd6a49283b1187f58978cb1e2ded3baf Mon Sep 17 00:00:00 2001
+From c3c76e104cb397f1eb973327334c641c3cdaf1ba Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Wed, 22 Nov 2023 17:42:31 +0200
-Subject: [PATCH 5/7] abootcmd: Add load subcommand
+Subject: [PATCH 3/5] abootcmd: Add load subcommand
 
 What it does:
 1. Allocates the memory in HEAP to fit the partition
@@ -28,11 +28,11 @@ Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
  1 file changed, 83 insertions(+), 1 deletion(-)
 
 diff --git a/cmd/abootimg.c b/cmd/abootimg.c
-index a5321bab6a..808c9c4941 100644
+index 327712a536..a85a8f77bc 100644
 --- a/cmd/abootimg.c
 +++ b/cmd/abootimg.c
-@@ -8,7 +8,9 @@
- #include <common.h>
+@@ -7,7 +7,9 @@
+ #include <android_image.h>
  #include <command.h>
  #include <image.h>
 +#include <malloc.h>
@@ -41,7 +41,7 @@ index a5321bab6a..808c9c4941 100644
  
  #define abootimg_addr() \
  	(_abootimg_addr == -1 ? image_load_addr : _abootimg_addr)
-@@ -259,10 +261,81 @@ static int do_abootimg_dump(struct cmd_tbl *cmdtp, int flag, int argc,
+@@ -258,10 +260,81 @@ static int do_abootimg_dump(struct cmd_tbl *cmdtp, int flag, int argc,
  	return CMD_RET_SUCCESS;
  }
  
@@ -123,7 +123,7 @@ index a5321bab6a..808c9c4941 100644
  };
  
  static int do_abootimg(struct cmd_tbl *cmdtp, int flag, int argc,
-@@ -305,5 +378,14 @@ U_BOOT_CMD(
+@@ -304,5 +377,14 @@ U_BOOT_CMD(
  	"    - get address and size (hex) of DT blob in the image by index\n"
  	"      <num>: index number of desired DT blob in DTB area\n"
  	"      [addr_var]: variable name to contain DT blob address\n"

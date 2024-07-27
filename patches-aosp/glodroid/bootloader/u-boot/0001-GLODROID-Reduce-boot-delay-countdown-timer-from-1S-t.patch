@@ -1,7 +1,7 @@
-From b7b6d92e59b082dd4a7f7af99d2de9e9600f92a8 Mon Sep 17 00:00:00 2001
+From ca04c3aea6266077a010e7dfc1efe74a641a01c0 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Sat, 25 Nov 2023 08:25:11 +0200
-Subject: [PATCH 1/7] GLODROID: Reduce boot delay countdown timer from 1S to
+Subject: [PATCH 1/5] GLODROID: Reduce boot delay countdown timer from 1S to
  100uS
 
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
@@ -10,10 +10,10 @@ Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/common/autoboot.c b/common/autoboot.c
-index 5d331991c1..92f91d7796 100644
+index 898a57bc92..85ea59ac85 100644
 --- a/common/autoboot.c
 +++ b/common/autoboot.c
-@@ -385,7 +385,7 @@ static int abortboot_single_key(int bootdelay)
+@@ -389,7 +389,7 @@ static int abortboot_single_key(int bootdelay)
  
  	while ((bootdelay > 0) && (!abort)) {
  		--bootdelay;
@@ -22,7 +22,7 @@ index 5d331991c1..92f91d7796 100644
  		ts = get_timer(0);
  		do {
  			if (tstc()) {	/* we got a key press	*/
-@@ -399,7 +399,7 @@ static int abortboot_single_key(int bootdelay)
+@@ -403,7 +403,7 @@ static int abortboot_single_key(int bootdelay)
  				break;
  			}
  			udelay(10000);
