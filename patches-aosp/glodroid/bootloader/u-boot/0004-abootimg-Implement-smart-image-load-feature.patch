@@ -1,7 +1,7 @@
-From 3e28cbce607ff24fdd0c585739a9d1bff8bc15d1 Mon Sep 17 00:00:00 2001
+From 7146745d81858974d38f084c5f3d686219de5183 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Sat, 25 Nov 2023 08:16:31 +0200
-Subject: [PATCH 5/5] abootimg: Implement smart image load feature
+Subject: [PATCH 4/5] abootimg: Implement smart image load feature
 
 Load only part of the boot partition that contains valuable
 information, thus improving the boot time.
@@ -14,10 +14,10 @@ Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
  3 files changed, 118 insertions(+), 4 deletions(-)
 
 diff --git a/boot/image-android.c b/boot/image-android.c
-index ee626972c1..08564225b4 100644
+index cd01278f21..e1b73fc5bb 100644
 --- a/boot/image-android.c
 +++ b/boot/image-android.c
-@@ -203,6 +203,76 @@ bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
+@@ -209,6 +209,76 @@ bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
  	return true;
  }
  
@@ -91,14 +91,14 @@ index ee626972c1..08564225b4 100644
 +	return 0;
 +}
 +
- static ulong android_image_get_kernel_addr(struct andr_image_data *img_data)
+ static ulong android_image_get_kernel_addr(struct andr_image_data *img_data,
+ 					   ulong comp)
  {
- 	/*
 diff --git a/cmd/abootimg.c b/cmd/abootimg.c
-index a85a8f77bc..9e965c1fb7 100644
+index 923c66d2a7..7fe199295f 100644
 --- a/cmd/abootimg.c
 +++ b/cmd/abootimg.c
-@@ -181,6 +181,35 @@ static int abootimg_get_dtb(int argc, char *const argv[])
+@@ -191,6 +191,35 @@ static int abootimg_get_dtb(int argc, char *const argv[])
  	return CMD_RET_USAGE;
  }
  
@@ -134,7 +134,7 @@ index a85a8f77bc..9e965c1fb7 100644
  static int do_abootimg_addr(struct cmd_tbl *cmdtp, int flag, int argc,
  			    char *const argv[])
  {
-@@ -298,10 +327,13 @@ static int do_abootimg_load(struct cmd_tbl *cmdtp, int flag, int argc,
+@@ -308,10 +337,13 @@ static int do_abootimg_load(struct cmd_tbl *cmdtp, int flag, int argc,
  		return CMD_RET_FAILURE;
  	}
  
@@ -153,10 +153,10 @@ index a85a8f77bc..9e965c1fb7 100644
  
  	sprintf(buf, "abootimg_%s_ptr", argv[3]);
 diff --git a/include/image.h b/include/image.h
-index c5b288f62b..7d8ff40c3f 100644
+index c52fced9b4..8b0ba798ce 100644
 --- a/include/image.h
 +++ b/include/image.h
-@@ -1826,6 +1826,18 @@ struct andr_image_data;
+@@ -1815,6 +1815,18 @@ struct andr_image_data;
  bool android_image_get_data(const void *boot_hdr, const void *vendor_boot_hdr,
  			    struct andr_image_data *data);
  
@@ -176,5 +176,5 @@ index c5b288f62b..7d8ff40c3f 100644
  
  /**
 -- 
-2.40.1
+2.43.0
 

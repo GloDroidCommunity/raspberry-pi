@@ -1,7 +1,7 @@
-From 3b8ec8afa9c805e18b7eb3f5f04f6966fe35d880 Mon Sep 17 00:00:00 2001
+From 5a03526bee926dcfac959e4ddcc5f2b9c02a68cf Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Thu, 23 Nov 2023 03:47:48 +0200
-Subject: [PATCH 4/5] avb: Implement get_preloaded_partition callback
+Subject: [PATCH 3/5] avb: Implement get_preloaded_partition callback
 
 AVB can reuse already loaded images instead of loading them
 from the disk.
@@ -93,5 +93,5 @@ index cff9117d92..d2626e8844 100644
  	ops_data->ops.validate_vbmeta_public_key = validate_vbmeta_public_key;
  	ops_data->ops.read_rollback_index = read_rollback_index;
 -- 
-2.40.1
+2.43.0
 

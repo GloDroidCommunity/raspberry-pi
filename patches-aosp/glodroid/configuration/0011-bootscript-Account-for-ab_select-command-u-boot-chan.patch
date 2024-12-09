@@ -1,0 +1,38 @@
+From 2d8bdcbe358e29aebadfca52fc5659d06710e7e3 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Tue, 10 Dec 2024 00:19:58 +0200
+Subject: [PATCH 11/11] bootscript: Account for ab_select command u-boot
+ changes
+
+In recent u-boot (2024.10+) ab_select migrated under the bcb umbrella.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ platform/uboot/bootscript.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/platform/uboot/bootscript.cpp b/platform/uboot/bootscript.cpp
+index 1e78b18..acbbdf2 100644
+--- a/platform/uboot/bootscript.cpp
++++ b/platform/uboot/bootscript.cpp
+@@ -69,7 +69,7 @@ FUNC_BEGIN(enter_fastboot)
+ FUNC_END()
+ 
+ FUNC_BEGIN(bootcmd_bcb)
+- ab_select slot_name mmc \${mmc_bootdev}#misc --no-dec || run enter_fastboot ;
++ bcb ab_select slot_name mmc \${mmc_bootdev}#misc --no-dec || run enter_fastboot ;
+ 
+  bcb load $mmc_bootdev misc ;
+  /* Handle $ adb reboot bootloader */
+@@ -82,7 +82,7 @@ FUNC_BEGIN(bootcmd_bcb)
+  if test STRESC(\${androidrecovery}) != STRESC(true);
+  then
+   /* ab_select is used as counter of failed boot attempts. After 14 failed boot attempt fallback to fastboot. */
+-  ab_select slot_name mmc \${mmc_bootdev}#misc || run enter_fastboot ;
++  bcb ab_select slot_name mmc \${mmc_bootdev}#misc || run enter_fastboot ;
+  fi;
+ 
+  FEXTENV(bootargs, " androidboot.slot_suffix=_\$slot_name") ;
+-- 
+2.43.0
+

@@ -1,7 +1,7 @@
-From c3c76e104cb397f1eb973327334c641c3cdaf1ba Mon Sep 17 00:00:00 2001
+From 03b408e5e58e39bd70fafd96642bfdf1fc8c6f11 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Wed, 22 Nov 2023 17:42:31 +0200
-Subject: [PATCH 3/5] abootcmd: Add load subcommand
+Subject: [PATCH 2/5] abootcmd: Add load subcommand
 
 What it does:
 1. Allocates the memory in HEAP to fit the partition
@@ -28,7 +28,7 @@ Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
  1 file changed, 83 insertions(+), 1 deletion(-)
 
 diff --git a/cmd/abootimg.c b/cmd/abootimg.c
-index 327712a536..a85a8f77bc 100644
+index ae7a1a7c83..923c66d2a7 100644
 --- a/cmd/abootimg.c
 +++ b/cmd/abootimg.c
 @@ -7,7 +7,9 @@
@@ -41,7 +41,7 @@ index 327712a536..a85a8f77bc 100644
  
  #define abootimg_addr() \
  	(_abootimg_addr == -1 ? image_load_addr : _abootimg_addr)
-@@ -258,10 +260,81 @@ static int do_abootimg_dump(struct cmd_tbl *cmdtp, int flag, int argc,
+@@ -268,10 +270,81 @@ static int do_abootimg_dump(struct cmd_tbl *cmdtp, int flag, int argc,
  	return CMD_RET_SUCCESS;
  }
  
@@ -123,7 +123,7 @@ index 327712a536..a85a8f77bc 100644
  };
  
  static int do_abootimg(struct cmd_tbl *cmdtp, int flag, int argc,
-@@ -304,5 +377,14 @@ U_BOOT_CMD(
+@@ -314,5 +387,14 @@ U_BOOT_CMD(
  	"    - get address and size (hex) of DT blob in the image by index\n"
  	"      <num>: index number of desired DT blob in DTB area\n"
  	"      [addr_var]: variable name to contain DT blob address\n"
@@ -140,5 +140,5 @@ index 327712a536..a85a8f77bc 100644
 +	"      slot_suffix: slot name (e.g. a, b)"
  );
 -- 
-2.40.1
+2.43.0
 

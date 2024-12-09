@@ -1,0 +1,46 @@
+From cb97edef9ed9cbebc35f5ac8b296cd2a04f409da Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 9 Dec 2024 23:50:19 +0200
+Subject: [PATCH 5/5] Revert "boot: android: Provide vendor_bootimg_addr in
+ boot_get_fdt()"
+
+This conflicts with GloDroid bootscript boot logic.
+
+This reverts commit 58fed99f46115fe8547e7978fa361bbbbb3f3b50.
+---
+ boot/image-android.c | 5 -----
+ boot/image-fdt.c     | 2 +-
+ 2 files changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/boot/image-android.c b/boot/image-android.c
+index e1b73fc5bb..ae958fd97b 100644
+--- a/boot/image-android.c
++++ b/boot/image-android.c
+@@ -57,11 +57,6 @@ static ulong add_trailer(ulong bootconfig_start_addr, ulong bootconfig_size)
+ 	return BOOTCONFIG_TRAILER_SIZE;
+ }
+ 
+-__weak ulong get_avendor_bootimg_addr(void)
+-{
+-	return -1;
+-}
+-
+ static void android_boot_image_v3_v4_parse_hdr(const struct andr_boot_img_hdr_v3 *hdr,
+ 					       struct andr_image_data *data)
+ {
+diff --git a/boot/image-fdt.c b/boot/image-fdt.c
+index 3d5b6f9e2d..bb1ac0052c 100644
+--- a/boot/image-fdt.c
++++ b/boot/image-fdt.c
+@@ -498,7 +498,7 @@ int boot_get_fdt(void *buf, const char *select, uint arch,
+ 		 * Firstly check if this android boot image has dtb field.
+ 		 */
+ 		dtb_idx = (u32)env_get_ulong("adtb_idx", 10, 0);
+-		if (android_image_get_dtb_by_index((ulong)hdr, get_avendor_bootimg_addr(),
++		if (android_image_get_dtb_by_index((ulong)hdr, 0,
+ 						   dtb_idx, &fdt_addr, &fdt_size)) {
+ 			fdt_blob = (char *)map_sysmem(fdt_addr, 0);
+ 			if (fdt_check_header(fdt_blob))
+-- 
+2.43.0
+
