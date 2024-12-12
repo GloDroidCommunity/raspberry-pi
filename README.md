@@ -63,6 +63,17 @@ sudo apt-get install -y python3-pip pkg-config python3-dev ninja-build
 sudo pip3 install mako jinja2 ply pyyaml pyelftools meson
 ```
 
+- Install vulkan SDK (ubuntu jammy)
+
+For other versions or distributions, please see the Vulkan SDK install page: https://vulkan.lunarg.com/sdk/home
+
+```bash
+wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.283-jammy.list https://packages.lunarg.com/vulkan/1.3.283/lunarg-vulkan-1.3.283-jammy.list
+sudo apt update
+sudo apt install vulkan-sdk
+```
+
 - Install the `repo` tool
 ```bash
 sudo apt-get install -y python-is-python3 wget
