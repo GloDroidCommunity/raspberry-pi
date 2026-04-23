@@ -1,0 +1,40 @@
+From 2a56decb7f80f44f261dcc4de2b05c5f94f8c047 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Thu, 23 Apr 2026 17:36:39 +0300
+Subject: [PATCH 22/22] platform/kernel: Properly distinguish 32bit and 64bit
+ kernel file names
+
+I have no idea why this did not triggered build failure before.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ platform/tools/makefile_kernel.mk | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/platform/tools/makefile_kernel.mk b/platform/tools/makefile_kernel.mk
+index ccdc39c..68c5fd1 100644
+--- a/platform/tools/makefile_kernel.mk
++++ b/platform/tools/makefile_kernel.mk
+@@ -46,7 +46,6 @@ $(INSTALL_TARGET): $(BUILD_TARGET)
+ 
+ 	export KERNELRELEASE=$$(cat $(OUT_BUILD_DIR)/include/config/kernel.release)
+ 
+-	@mv $(OUT_INSTALL_DIR)/vmlinuz-$${KERNELRELEASE} $(OUT_INSTALL_DIR)/vmlinuz
+ 	@mv $(OUT_INSTALL_DIR)/config-$${KERNELRELEASE} $(OUT_INSTALL_DIR)/config
+ 	@mv $(OUT_INSTALL_DIR)/System.map-$${KERNELRELEASE} $(OUT_INSTALL_DIR)/System.map
+ 
+@@ -54,8 +53,10 @@ $(INSTALL_TARGET): $(BUILD_TARGET)
+ 	@mv $(OUT_INSTALL_DIR)/modules/lib/modules/$${KERNELRELEASE} $(OUT_INSTALL_DIR)/modules/lib/modules/GloDroid
+ 
+ ifeq ($(TARGET_ARCH),arm64)
+-	@lz4c -f -c1 $(OUT_INSTALL_DIR)/vmlinuz $(OUT_INSTALL_DIR)/kernel &>>$@ || (cat $@.tmp && exit 1)
++	@mv $(OUT_INSTALL_DIR)/vmlinux-$${KERNELRELEASE} $(OUT_INSTALL_DIR)/vmlinux
++	@lz4c -f -c1 $(OUT_INSTALL_DIR)/vmlinux $(OUT_INSTALL_DIR)/kernel &>>$@ || (cat $@.tmp && exit 1)
+ else
++	@mv $(OUT_INSTALL_DIR)/vmlinuz-$${KERNELRELEASE} $(OUT_INSTALL_DIR)/vmlinuz
+ 	@cp $(OUT_INSTALL_DIR)/vmlinuz $(OUT_INSTALL_DIR)/kernel
+ endif
+ 
+-- 
+2.51.0
+
