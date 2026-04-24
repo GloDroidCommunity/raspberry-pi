@@ -1,0 +1,56 @@
+From 33ed257ec83c53ecb45703c01288e798d7df89d6 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Fri, 24 Apr 2026 23:56:55 +0300
+Subject: [PATCH 23/23] Switch to AOSP built-in apexed drm_hwcomposer
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/graphics/board.mk  |  8 --------
+ common/graphics/device.mk | 11 +----------
+ 2 files changed, 1 insertion(+), 18 deletions(-)
+
+diff --git a/common/graphics/board.mk b/common/graphics/board.mk
+index e102d57..90b55bf 100644
+--- a/common/graphics/board.mk
++++ b/common/graphics/board.mk
+@@ -12,14 +12,6 @@ BOARD_MESA3D_SRC_DIR := glodroid/vendor/mesa3d
+ BOARD_MESA3D_GALLIUM_DRIVERS := lima
+ BOARD_MESA3D_BUILD_LIBGBM := true
+ 
+-ifeq ($(GD_USE_RS_HWCOMPOSER),)
+-BOARD_BUILD_AOSPEXT_DRMHWCOMPOSER := true
+-BOARD_DRMHWCOMPOSER_SRC_DIR := glodroid/vendor/drm_hwcomposer
+-else
+-BOARD_BUILD_AOSPEXT_RSHWCOMPOSER := true
+-BOARD_RSHWCOMPOSER_SRC_DIR := glodroid/vendor/rs-hwcomposer
+-endif
+-
+ BOARD_BUILD_AOSPEXT_MINIGBM := true
+ BOARD_MINIGBM_SRC_DIR := glodroid/vendor/minigbm
+ BOARD_MINIGBM_PATCHES_DIRS += $(BCG_PATH)/patches-minigbm
+diff --git a/common/graphics/device.mk b/common/graphics/device.mk
+index 3850c8d..a3481ae 100644
+--- a/common/graphics/device.mk
++++ b/common/graphics/device.mk
+@@ -17,17 +17,8 @@ PRODUCT_VENDOR_PROPERTIES += ro.hardware.egl=mesa
+ PRODUCT_COPY_FILES += \
+     frameworks/native/data/etc/android.software.opengles.deqp.level-2023-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.opengles.deqp.level.xml
+ 
+-ifeq ($(GD_USE_RS_HWCOMPOSER),)
+ PRODUCT_PACKAGES += \
+-    android.hardware.composer.hwc3-service.drm_aospext
+-
+-    DEVICE_MANIFEST_FILE += glodroid/configuration/common/graphics/android.hardware.graphics.composer@3.xml
+-    PRODUCT_COPY_FILES += glodroid/configuration/common/graphics/android.hardware.graphics.composer@3.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/android.hardware.graphics.composer@3.rc
+-else
+-PRODUCT_PACKAGES += \
+-    android.hardware.composer.hwc3-service.rs \
+-    android.hardware.composer.hwc3-rs.rc android.hardware.composer.hwc3-rs.xml
+-endif
++    com.android.hardware.graphics.composer.drm_hwcomposer
+ 
+ ## Minigbm/Gralloc5
+ PRODUCT_PACKAGES += \
+-- 
+2.51.0
+
