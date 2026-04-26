@@ -1,7 +1,7 @@
-From f44eb6275ec715e1a06b7c7a998515ccb38cea78 Mon Sep 17 00:00:00 2001
+From f8396f827c13dfb0424fd56fe5de2936114aa217 Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
 Date: Mon, 2 Oct 2023 02:01:11 +0300
-Subject: [PATCH 10/11] RPI4: v4l2_codec2/encoder: Set input format after 1st
+Subject: [PATCH 09/10] RPI4: v4l2_codec2/encoder: Set input format after 1st
  frame received
 
 To distinguish between scrcpy/recording case (RGBA) and the camera
@@ -10,74 +10,23 @@ recording (NV12) case.
 Change-Id: I5caaac35649a59317321b8202985c6c496ccea1c
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
 ---
- components/V4L2EncodeComponent.cpp            | 49 +---------------
- components/V4L2Encoder.cpp                    | 57 +++++++++++++------
- .../v4l2_codec2/components/V4L2Encoder.h      |  7 ++-
- 3 files changed, 45 insertions(+), 68 deletions(-)
+ v4l2/V4L2EncodeComponent.cpp                | 12 +----
+ v4l2/V4L2Encoder.cpp                        | 49 ++++++++++++++-------
+ v4l2/include/v4l2_codec2/v4l2/V4L2Encoder.h |  6 ++-
+ 3 files changed, 38 insertions(+), 29 deletions(-)
 
-diff --git a/components/V4L2EncodeComponent.cpp b/components/V4L2EncodeComponent.cpp
-index b17488b..8a5adb2 100644
---- a/components/V4L2EncodeComponent.cpp
-+++ b/components/V4L2EncodeComponent.cpp
-@@ -38,8 +38,6 @@ namespace android {
- 
- namespace {
- 
--const VideoPixelFormat kInputPixelFormat = VideoPixelFormat::NV12;
--
- // The peak bitrate in function of the target bitrate, used when the bitrate mode is VBR.
- constexpr uint32_t kPeakBitrateMultiplier = 2u;
- 
-@@ -134,41 +132,6 @@ std::optional<std::vector<VideoFramePlane>> getVideoFrameLayout(const C2ConstGra
-     return planes;
- }
- 
--// Get the video frame stride for the specified |format| and |size|.
--std::optional<uint32_t> getVideoFrameStride(VideoPixelFormat format, ui::Size size) {
--    // Fetch a graphic block from the pool to determine the stride.
--    std::shared_ptr<C2BlockPool> pool;
--    c2_status_t status = GetCodec2BlockPool(C2BlockPool::BASIC_GRAPHIC, nullptr, &pool);
--    if (status != C2_OK) {
--        ALOGE("Failed to get basic graphic block pool (err=%d)", status);
--        return std::nullopt;
--    }
--
--    // Android HAL format doesn't have I420, we use YV12 instead and swap the U and V planes when
--    // converting to NV12. YCBCR_420_888 will allocate NV12 by minigbm.
--    HalPixelFormat halFormat = (format == VideoPixelFormat::I420) ? HalPixelFormat::YV12
--                                                                  : HalPixelFormat::YCBCR_420_888;
--
--    std::shared_ptr<C2GraphicBlock> block;
--    status = pool->fetchGraphicBlock(size.width, size.height, static_cast<uint32_t>(halFormat),
--                                     C2MemoryUsage(C2MemoryUsage::CPU_READ), &block);
--    if (status != C2_OK) {
--        ALOGE("Failed to fetch graphic block (err=%d)", status);
--        return std::nullopt;
--    }
--
--    const C2ConstGraphicBlock constBlock = block->share(C2Rect(size.width, size.height), C2Fence());
--    VideoPixelFormat pixelFormat;
--    std::optional<std::vector<VideoFramePlane>> planes =
--            getVideoFrameLayout(constBlock, &pixelFormat);
--    if (!planes || planes.value().empty()) {
--        ALOGE("Failed to get video frame layout from block");
--        return std::nullopt;
--    }
--
--    return planes.value()[0].mStride;
--}
--
- // Create an input frame from the specified graphic block.
- std::unique_ptr<V4L2Encoder::InputFrame> CreateInputFrame(const C2ConstGraphicBlock& block,
-                                                           uint64_t index, int64_t timestamp) {
-@@ -639,23 +602,13 @@ bool V4L2EncodeComponent::initializeEncoder() {
+diff --git a/v4l2/V4L2EncodeComponent.cpp b/v4l2/V4L2EncodeComponent.cpp
+index e3b9b14..4299d9e 100644
+--- a/v4l2/V4L2EncodeComponent.cpp
++++ b/v4l2/V4L2EncodeComponent.cpp
+@@ -73,16 +73,6 @@ bool V4L2EncodeComponent::initializeEncoder() {
          h264Level = c2LevelToV4L2Level(mInterface->getOutputLevel());
      }
  
 -    // Get the stride used by the C2 framework, as this might be different from the stride used by
 -    // the V4L2 encoder.
 -    std::optional<uint32_t> stride =
--            getVideoFrameStride(kInputPixelFormat, mInterface->getInputVisibleSize());
+-            getVideoFrameStride(VideoEncoder::kInputPixelFormat, mInterface->getInputVisibleSize());
 -    if (!stride) {
 -        ALOGE("Failed to get video frame stride");
 -        reportError(C2_CORRUPTED);
@@ -87,28 +36,20 @@ index b17488b..8a5adb2 100644
      // Get the requested bitrate mode and bitrate. The C2 framework doesn't offer a parameter to
      // configure the peak bitrate, so we use a multiple of the target bitrate.
      mBitrateMode = mInterface->getBitrateMode();
+@@ -95,7 +85,7 @@ bool V4L2EncodeComponent::initializeEncoder() {
      mBitrate = mInterface->getBitrate();
  
      mEncoder = V4L2Encoder::create(
 -            outputProfile, h264Level, mInterface->getInputVisibleSize(), *stride,
 +            outputProfile, h264Level, mInterface->getInputVisibleSize(),
              mInterface->getKeyFramePeriod(), mBitrateMode, mBitrate,
-             mBitrate * kPeakBitrateMultiplier,
+             mBitrate * VideoEncoder::kPeakBitrateMultiplier,
              ::base::BindRepeating(&V4L2EncodeComponent::fetchOutputBlock, mWeakThis),
-diff --git a/components/V4L2Encoder.cpp b/components/V4L2Encoder.cpp
-index cd20cb5..a1c036e 100644
---- a/components/V4L2Encoder.cpp
-+++ b/components/V4L2Encoder.cpp
-@@ -26,8 +26,6 @@ namespace android {
- 
- namespace {
- 
--const VideoPixelFormat kInputPixelFormat = VideoPixelFormat::NV12;
--
- // The maximum size for output buffer, which is chosen empirically for a 1080p video.
- constexpr size_t kMaxBitstreamBufferSizeInBytes = 2 * 1024 * 1024;  // 2MB
- // The frame size for 1080p (FHD) video in pixels.
-@@ -54,7 +52,7 @@ size_t GetMaxOutputBufferSize(const ui::Size& size) {
+diff --git a/v4l2/V4L2Encoder.cpp b/v4l2/V4L2Encoder.cpp
+index 730827c..49f7dfa 100644
+--- a/v4l2/V4L2Encoder.cpp
++++ b/v4l2/V4L2Encoder.cpp
+@@ -52,7 +52,7 @@ size_t GetMaxOutputBufferSize(const ui::Size& size) {
  // static
  std::unique_ptr<VideoEncoder> V4L2Encoder::create(
          C2Config::profile_t outputProfile, std::optional<uint8_t> level,
@@ -117,7 +58,7 @@ index cd20cb5..a1c036e 100644
          C2Config::bitrate_mode_t bitrateMode, uint32_t bitrate, std::optional<uint32_t> peakBitrate,
          FetchOutputBufferCB fetchOutputBufferCb, InputBufferDoneCB inputBufferDoneCb,
          OutputBufferDoneCB outputBufferDoneCb, DrainDoneCB drainDoneCb, ErrorCB errorCb,
-@@ -64,7 +62,7 @@ std::unique_ptr<VideoEncoder> V4L2Encoder::create(
+@@ -62,7 +62,7 @@ std::unique_ptr<VideoEncoder> V4L2Encoder::create(
      std::unique_ptr<V4L2Encoder> encoder = ::base::WrapUnique<V4L2Encoder>(new V4L2Encoder(
              std::move(taskRunner), std::move(fetchOutputBufferCb), std::move(inputBufferDoneCb),
              std::move(outputBufferDoneCb), std::move(drainDoneCb), std::move(errorCb)));
@@ -126,7 +67,7 @@ index cd20cb5..a1c036e 100644
                               bitrate, peakBitrate)) {
          return nullptr;
      }
-@@ -205,7 +203,7 @@ VideoPixelFormat V4L2Encoder::inputFormat() const {
+@@ -208,7 +208,7 @@ VideoPixelFormat V4L2Encoder::inputFormat() const {
  }
  
  bool V4L2Encoder::initialize(C2Config::profile_t outputProfile, std::optional<uint8_t> level,
@@ -135,7 +76,7 @@ index cd20cb5..a1c036e 100644
                               C2Config::bitrate_mode_t bitrateMode, uint32_t bitrate,
                               std::optional<uint32_t> peakBitrate) {
      ALOGV("%s()", __func__);
-@@ -265,13 +263,6 @@ bool V4L2Encoder::initialize(C2Config::profile_t outputProfile, std::optional<ui
+@@ -268,13 +268,6 @@ bool V4L2Encoder::initialize(C2Config::profile_t outputProfile, std::optional<ui
      // the configured input format.
      if (!configureOutputFormat(outputProfile)) return false;
  
@@ -149,39 +90,33 @@ index cd20cb5..a1c036e 100644
      // Configure the device, setting all required controls.
      if (!configureDevice(outputProfile, level)) return false;
  
-@@ -298,6 +289,31 @@ void V4L2Encoder::handleEncodeRequest() {
+@@ -301,6 +294,25 @@ void V4L2Encoder::handleEncodeRequest() {
      // Get the next encode request from the queue.
      EncodeRequest& encodeRequest = mEncodeRequests.front();
  
 +    auto format = encodeRequest.video_frame->pixelFormat();
 +    auto stride = encodeRequest.video_frame->planes()[0].mStride;
-+
 +    if (!mFormatSet) {
 +        if (format != VideoPixelFormat::NV12)
 +            format = VideoPixelFormat::RGBA;
-+
 +        ALOGI("Setting input format to %s", videoPixelFormatToString(format).c_str());
-+
 +        if (!configureInputFormat(format, stride)) {
 +            ALOGE("Failed to set input format to %s", videoPixelFormatToString(format).c_str());
 +            onError();
 +            return;
 +        }
-+
 +        // Create input and output buffers.
 +        if (!createInputBuffers() || !createOutputBuffers()) {
 +            ALOGE("Failed to create input and output buffers");
 +            onError();
 +            return;
 +        }
-+
 +        mFormatSet = true;
 +    }
-+
      // Check if the device has free input buffers available. If not we'll switch to the
      // WAITING_FOR_INPUT_BUFFERS state, and resume encoding once we've dequeued an input buffer.
      // Note: The input buffers are not copied into the device's input buffers, but rather a memory
-@@ -455,15 +471,15 @@ void V4L2Encoder::onDrainDone(bool done) {
+@@ -458,15 +470,15 @@ void V4L2Encoder::onDrainDone(bool done) {
  }
  
  bool V4L2Encoder::configureInputFormat(VideoPixelFormat inputFormat, uint32_t stride) {
@@ -203,7 +138,7 @@ index cd20cb5..a1c036e 100644
      if (fourcc) {
          format = mInputQueue->setFormat(fourcc->toV4L2PixFmt(), mVisibleSize, 0, stride);
      }
-@@ -472,10 +488,15 @@ bool V4L2Encoder::configureInputFormat(VideoPixelFormat inputFormat, uint32_t st
+@@ -475,10 +487,15 @@ bool V4L2Encoder::configureInputFormat(VideoPixelFormat inputFormat, uint32_t st
      // input pixel formats and use a format convertor. We need to try all formats as some formats
      // might not be supported for the configured output format.
      if (!format) {
@@ -219,12 +154,12 @@ index cd20cb5..a1c036e 100644
          }
      }
  
-diff --git a/components/include/v4l2_codec2/components/V4L2Encoder.h b/components/include/v4l2_codec2/components/V4L2Encoder.h
-index d7b55c0..b36fd1c 100644
---- a/components/include/v4l2_codec2/components/V4L2Encoder.h
-+++ b/components/include/v4l2_codec2/components/V4L2Encoder.h
-@@ -33,7 +33,7 @@ public:
- 
+diff --git a/v4l2/include/v4l2_codec2/v4l2/V4L2Encoder.h b/v4l2/include/v4l2_codec2/v4l2/V4L2Encoder.h
+index d1eb656..1908d09 100644
+--- a/v4l2/include/v4l2_codec2/v4l2/V4L2Encoder.h
++++ b/v4l2/include/v4l2_codec2/v4l2/V4L2Encoder.h
+@@ -29,7 +29,7 @@ class V4L2Encoder : public VideoEncoder {
+ public:
      static std::unique_ptr<VideoEncoder> create(
              C2Config::profile_t profile, std::optional<uint8_t> level, const ui::Size& visibleSize,
 -            uint32_t stride, uint32_t keyFramePeriod, C2Config::bitrate_mode_t bitrateMode,
@@ -232,7 +167,7 @@ index d7b55c0..b36fd1c 100644
              uint32_t bitrate, std::optional<uint32_t> peakBitrate,
              FetchOutputBufferCB fetchOutputBufferCb, InputBufferDoneCB inputBufferDoneCb,
              OutputBufferDoneCB outputBufferDoneCb, DrainDoneCB drainDoneCb, ErrorCB errorCb,
-@@ -82,7 +82,7 @@ private:
+@@ -78,7 +78,7 @@ private:
  
      // Initialize the V4L2 encoder for specified parameters.
      bool initialize(C2Config::profile_t outputProfile, std::optional<uint8_t> level,
@@ -241,16 +176,15 @@ index d7b55c0..b36fd1c 100644
                      C2Config::bitrate_mode_t bitrateMode, uint32_t bitrate,
                      std::optional<uint32_t> peakBitrate);
  
-@@ -190,6 +190,9 @@ private:
+@@ -186,6 +186,8 @@ private:
      // The current state of the encoder.
      State mState = State::UNINITIALIZED;
  
 +    // We don't know the input format until the first input frame received
 +    bool mFormatSet = false;
-+
      scoped_refptr<::base::SequencedTaskRunner> mTaskRunner;
  
      ::base::WeakPtr<V4L2Encoder> mWeakThis;
 -- 
-2.39.2
+2.43.0
 

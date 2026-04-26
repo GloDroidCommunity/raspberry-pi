@@ -1,0 +1,38 @@
+From fdd041adbeda9d74bfc56da1b434c93c46026b86 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sun, 26 Apr 2026 16:24:20 +0300
+Subject: [PATCH 24/26] Upgrade v4l2_codec2 version to 1.2
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/codecs/device.mk                     | 2 +-
+ common/codecs/sepolicy/vendor/file_contexts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common/codecs/device.mk b/common/codecs/device.mk
+index 53769a7..7c7d98e 100644
+--- a/common/codecs/device.mk
++++ b/common/codecs/device.mk
+@@ -50,7 +50,7 @@ PRODUCT_VENDOR_PROPERTIES += \
+ 
+ # V4L2 codec2
+ PRODUCT_PACKAGES += \
+-    android.hardware.media.c2@1.0-service-v4l2 \
++    android.hardware.media.c2@1.2-service-v4l2 \
+     libv4l2_codec2_vendor_allocator            \
+     libc2plugin_store                          \
+ 
+diff --git a/common/codecs/sepolicy/vendor/file_contexts b/common/codecs/sepolicy/vendor/file_contexts
+index 91614fa..8dc202a 100644
+--- a/common/codecs/sepolicy/vendor/file_contexts
++++ b/common/codecs/sepolicy/vendor/file_contexts
+@@ -2,5 +2,5 @@
+ /vendor/bin/hw/android\.hardware\.media\.c2@1\.2-service-ffmpeg(.*)?		u:object_r:mediacodec_exec:s0
+ 
+ # V4L2 codec2
+-/vendor/bin/hw/android\.hardware\.media\.c2@1\.0-service-v4l2                   u:object_r:mediacodec_exec:s0
++/vendor/bin/hw/android\.hardware\.media\.c2@1\.2-service-v4l2                   u:object_r:mediacodec_exec:s0
+ /vendor/lib(64)?/libc2plugin_store\.so                                          u:object_r:same_process_hal_file:s0
+-- 
+2.51.0
+

@@ -1,0 +1,29 @@
+From bdc6999f70c3f8aafe25b4b7341f09846cce4c2b Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Fri, 22 May 2026 12:04:38 +0300
+Subject: [PATCH 11/11] Scan for more devices in getDeviceInfosForType
+
+RPI4's encoder is located at /dev/video11
+
+Change-Id: I79181d045879b84c320bdf5a06f56bef3672c947
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ v4l2/V4L2Device.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/v4l2/V4L2Device.cpp b/v4l2/V4L2Device.cpp
+index 65fdc78..f9cf053 100644
+--- a/v4l2/V4L2Device.cpp
++++ b/v4l2/V4L2Device.cpp
+@@ -2483,7 +2483,7 @@ const V4L2Device::DeviceInfos& V4L2Device::getDeviceInfosForType(V4L2Device::Typ
+     }
+ 
+     DeviceInfos deviceInfos;
+-    for (int i = 0; i < 10; ++i) {
++    for (int i = 0; i < 64; ++i) {
+         std::string path = base::StringPrintf("%s%d", kVideoDevicePattern, i);
+ 
+         scoped_refptr<V4L2Device> device = V4L2Device::create();
+-- 
+2.51.0
+

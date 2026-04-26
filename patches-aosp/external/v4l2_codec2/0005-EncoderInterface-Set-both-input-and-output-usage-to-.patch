@@ -1,0 +1,32 @@
+From c78bf460244e808ef2f45cd8ecd5e8ba3939b4bb Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 2 Oct 2023 01:55:53 +0300
+Subject: [PATCH 05/10] EncoderInterface: Set both input and output usage to
+ VIDEO_ENCODER
+
+... so that gralloc can allocate the buffer with the appropriate memory type.
+
+Change-Id: Ifc7d507c9bb9c8193217b74d860760689f993d6c
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ components/EncodeInterface.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/components/EncodeInterface.cpp b/components/EncodeInterface.cpp
+index 12152e6..af4e14a 100644
+--- a/components/EncodeInterface.cpp
++++ b/components/EncodeInterface.cpp
+@@ -319,6 +319,10 @@ void EncodeInterface::Initialize(const C2String& name, const SupportedCapabiliti
+                                  0u, static_cast<uint64_t>(BufferUsage::VIDEO_ENCODER)))
+                          .build());
+ 
++    addParameter(DefineParam(mInputMemoryUsage, C2_PARAMKEY_OUTPUT_STREAM_USAGE)
++                         .withConstValue(new C2StreamUsageTuning::input(
++                                 0u, static_cast<uint64_t>(BufferUsage::VIDEO_ENCODER)))
++                         .build());
+     addParameter(
+             DefineParam(mOutputFormat, C2_PARAMKEY_OUTPUT_STREAM_BUFFER_TYPE)
+                     .withConstValue(new C2StreamBufferTypeSetting::output(0u, C2BufferData::LINEAR))
+-- 
+2.43.0
+

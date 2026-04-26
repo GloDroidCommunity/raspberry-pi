@@ -1,0 +1,33 @@
+From abd58baf98824aac5321eaf005f5419203faf301 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 2 Oct 2023 02:15:11 +0300
+Subject: [PATCH 07/10] HACK: v4l2_codec2: Allow format converter
+ initialization to fail
+
+We do not need any format converters.
+We want zero-copy - to display the buffer as is.
+
+Change-Id: Ibb4e6b9df370dcba53b15b24fb9f503f6e1608b4
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ components/EncodeComponent.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/components/EncodeComponent.cpp b/components/EncodeComponent.cpp
+index 65de283..ca20edf 100644
+--- a/components/EncodeComponent.cpp
++++ b/components/EncodeComponent.cpp
+@@ -478,8 +478,8 @@ void EncodeComponent::queueTask(std::unique_ptr<C2Work> work) {
+                                             VideoEncoder::kInputBufferCount, mEncoder->codedSize());
+             if (!mInputFormatConverter) {
+                 ALOGE("Failed to created input format convertor");
+-                reportError(C2_CORRUPTED);
+-                return;
++                // reportError(C2_CORRUPTED);
++                // return;
+             }
+         }
+     }
+-- 
+2.43.0
+
