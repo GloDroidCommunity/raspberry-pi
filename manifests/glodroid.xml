@@ -15,7 +15,7 @@
 
   <!-- gpu+display components (vendor) -->
   <project path="glodroid/vendor/minigbm"         remote="aosp" name="platform/external/minigbm"        groups="glodroid" revision="93e16b90294c4634d43c4987f194204ac3b80ac8" />
-  <project path="glodroid/vendor/mesa3d"          remote="aosp" name="platform/external/mesa3d"         groups="glodroid" revision="a0918ca13d3ae5c0bf51e327291ca94c09ff3233" />
+  <project path="glodroid/vendor/mesa3d"          remote="aosp" name="platform/external/mesa3d"         groups="glodroid" revision="60fdab22a5f38f7ecef040961d1401d27d4d83b1" />
 
   <!-- camera components (vendor) -->
   <project path="glodroid/vendor/libcamera"                     remote="libcamera" name="libcamera.git"      groups="glodroid" revision="refs/tags/v0.2.0" />
