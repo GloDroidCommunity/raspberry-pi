@@ -1,0 +1,26 @@
+From ea1c2bc42707af6aaf7c448b1fd47e6cea3e1648 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 27 Apr 2026 11:28:38 +0300
+Subject: [PATCH 27/28] Update Rust binaries path to match A16 tree.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/base/board.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/base/board.mk b/common/base/board.mk
+index bd7c63e..b58871d 100644
+--- a/common/base/board.mk
++++ b/common/base/board.mk
+@@ -177,7 +177,7 @@ BOARD_USES_GLODROID_MAKE_TARGETS := true
+ 
+ BOARD_BUILD_GLODROID_KERNEL := true
+ 
+-RUST_BIN_DIR := prebuilts/rust/linux-x86/1.68.0/bin
++RUST_BIN_DIR := prebuilts/rust/linux-x86/1.88.0/bin
+ 
+ # vendor_dlkm is not yet ready for files filtering
+ BUILD_BROKEN_INCORRECT_PARTITION_IMAGES := true
+-- 
+2.51.0
+

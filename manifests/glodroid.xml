@@ -38,7 +38,7 @@
   <project path="glodroid/bootloader/raspberry-fw"  remote="github"  name="raspberrypi/firmware.git" groups="glodroid" revision="57b8dbdce68c8f5e2a425d86e4e7e149e911b9d3" clone-depth="1" />
 
   <!-- kernel/firmware components (platform) -->
-  <project path="glodroid/kernel/broadcom"        remote="glodroid" name="glodroid_forks.git" groups="glodroid" revision="refs/tags/kernel-broadcom-2024w50" />
+  <project path="glodroid/kernel/broadcom"        remote="glodroid" name="glodroid_forks.git" groups="glodroid" revision="refs/tags/kernel-broadcom-2026w17" />
 
   <!-- compilers for platform components -->
   <project path="prebuilts/gcc/linux-x86/aarch64/gcc-linaro-aarch64-linux-gnu"
