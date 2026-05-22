@@ -1,0 +1,64 @@
+From 5d223780fd3709805e1ae5e62c32f9f7c4ddaff3 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sat, 23 May 2026 15:08:42 +0300
+Subject: [PATCH 4/4] Add SE policies
+
+AI assisted
+---
+ sepolicy/file.te              | 2 ++
+ sepolicy/genfs_contexts       | 2 ++
+ sepolicy/hal_audio_default.te | 5 +++++
+ sepolicy/property.te          | 2 ++
+ sepolicy/property_contexts    | 1 +
+ 5 files changed, 12 insertions(+)
+ create mode 100644 sepolicy/file.te
+ create mode 100644 sepolicy/genfs_contexts
+ create mode 100644 sepolicy/hal_audio_default.te
+ create mode 100644 sepolicy/property.te
+ create mode 100644 sepolicy/property_contexts
+
+diff --git a/sepolicy/file.te b/sepolicy/file.te
+new file mode 100644
+index 0000000..0099415
+--- /dev/null
++++ b/sepolicy/file.te
+@@ -0,0 +1,2 @@
++# sysfs type for device tree compatible string
++type sysfs_dt_compatible, fs_type, sysfs_type;
+diff --git a/sepolicy/genfs_contexts b/sepolicy/genfs_contexts
+new file mode 100644
+index 0000000..ee8df72
+--- /dev/null
++++ b/sepolicy/genfs_contexts
+@@ -0,0 +1,2 @@
++# Label /sys/firmware/devicetree/base/compatible
++genfscon sysfs /firmware/devicetree/base/compatible u:object_r:sysfs_dt_compatible:s0
+diff --git a/sepolicy/hal_audio_default.te b/sepolicy/hal_audio_default.te
+new file mode 100644
+index 0000000..7a1438c
+--- /dev/null
++++ b/sepolicy/hal_audio_default.te
+@@ -0,0 +1,5 @@
++# Allow reading device tree compatible for RPi model detection
++allow hal_audio_default sysfs_dt_compatible:file r_file_perms;
++
++# Allow setting vendor audio properties (persist.vendor.audio.*)
++set_prop(hal_audio_default, vendor_audio_prop)
+diff --git a/sepolicy/property.te b/sepolicy/property.te
+new file mode 100644
+index 0000000..35495cb
+--- /dev/null
++++ b/sepolicy/property.te
+@@ -0,0 +1,2 @@
++# Vendor audio HAL properties (persist.vendor.audio.*)
++vendor_internal_prop(vendor_audio_prop)
+diff --git a/sepolicy/property_contexts b/sepolicy/property_contexts
+new file mode 100644
+index 0000000..6bfd201
+--- /dev/null
++++ b/sepolicy/property_contexts
+@@ -0,0 +1 @@
++persist.vendor.audio.                          u:object_r:vendor_audio_prop:s0
+-- 
+2.51.0
+

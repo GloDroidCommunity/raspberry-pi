@@ -1,0 +1,112 @@
+From fec034f8bae95541a9a45a36357ac695fcb5e5fb Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sat, 23 May 2026 18:41:18 +0300
+Subject: [PATCH 29/29] audio: Switch to Baylibre's fork of generic audio HAL
+ (AIDL/APEX)
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/audio/android.hardware.audio.effect@7.0.xml | 11 -----------
+ common/audio/android.hardware.audio@7.1.xml        | 11 -----------
+ common/audio/board.mk                              | 10 +---------
+ common/audio/device.mk                             | 11 +----------
+ common/audio/sepolicy/vendor/tinymix.te            |  7 -------
+ 5 files changed, 2 insertions(+), 48 deletions(-)
+ delete mode 100644 common/audio/android.hardware.audio.effect@7.0.xml
+ delete mode 100644 common/audio/android.hardware.audio@7.1.xml
+ delete mode 100644 common/audio/sepolicy/vendor/tinymix.te
+
+diff --git a/common/audio/android.hardware.audio.effect@7.0.xml b/common/audio/android.hardware.audio.effect@7.0.xml
+deleted file mode 100644
+index 1856dc3..0000000
+--- a/common/audio/android.hardware.audio.effect@7.0.xml
++++ /dev/null
+@@ -1,11 +0,0 @@
+-<manifest version="1.0" type="device" target-level="8">
+-    <hal format="hidl">
+-        <name>android.hardware.audio.effect</name>
+-        <transport>hwbinder</transport>
+-        <version>7.0</version>
+-        <interface>
+-            <name>IEffectsFactory</name>
+-            <instance>default</instance>
+-        </interface>
+-    </hal>
+-</manifest>
+diff --git a/common/audio/android.hardware.audio@7.1.xml b/common/audio/android.hardware.audio@7.1.xml
+deleted file mode 100644
+index 5954858..0000000
+--- a/common/audio/android.hardware.audio@7.1.xml
++++ /dev/null
+@@ -1,11 +0,0 @@
+-<manifest version="1.0" type="device" target-level="8">
+-    <hal format="hidl">
+-        <name>android.hardware.audio</name>
+-        <transport>hwbinder</transport>
+-        <version>7.1</version>
+-        <interface>
+-            <name>IDevicesFactory</name>
+-            <instance>default</instance>
+-        </interface>
+-    </hal>
+-</manifest>
+diff --git a/common/audio/board.mk b/common/audio/board.mk
+index b3f823d..2758465 100644
+--- a/common/audio/board.mk
++++ b/common/audio/board.mk
+@@ -4,12 +4,4 @@
+ #
+ # Copyright (C) 2022 Roman Stratiienko (r.stratiienko@gmail.com)
+ 
+-BCA_PATH := $(patsubst $(CURDIR)/%,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+-
+-# TinyHAL (Audio)
+-BOARD_USES_TINYHAL_AUDIO := true
+-TINYCOMPRESS_TSTAMP_IS_LONG := true
+-TINYALSA_NO_ADD_NEW_CTRLS := true
+-TINYALSA_NO_CTL_GET_ID := true
+-
+-BOARD_VENDOR_SEPOLICY_DIRS       += $(BCA_PATH)/sepolicy/vendor
++BOARD_VENDOR_SEPOLICY_DIRS       += glodroid/vendor/audio/sepolicy
+diff --git a/common/audio/device.mk b/common/audio/device.mk
+index 7d1b194..1270c01 100644
+--- a/common/audio/device.mk
++++ b/common/audio/device.mk
+@@ -5,12 +5,7 @@
+ # Copyright (C) 2022 Roman Stratiienko (r.stratiienko@gmail.com)
+ 
+ PRODUCT_PACKAGES += \
+-    android.hardware.audio.service \
+-    android.hardware.audio@7.1-impl \
+-    android.hardware.audio.effect@7.0-impl \
+-    audio.primary.$(TARGET_PRODUCT) \
+-    audio.usb.default \
+-    audio.r_submix.default \
++    com.android.hardware.audio.generic \
+     tinyalsa tinymix tinycap tinypcminfo tinyplay \
+ 
+ GD_AUDIOPOLICY_FILE ?= $(LOCAL_PATH)/audio_policy_configuration.xml
+@@ -25,7 +20,3 @@ PRODUCT_COPY_FILES += \
+     frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
+     frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
+     frameworks/av/media/libeffects/data/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_effects.xml \
+-
+-DEVICE_MANIFEST_FILE += \
+-    glodroid/configuration/common/audio/android.hardware.audio@7.1.xml \
+-    glodroid/configuration/common/audio/android.hardware.audio.effect@7.0.xml \
+diff --git a/common/audio/sepolicy/vendor/tinymix.te b/common/audio/sepolicy/vendor/tinymix.te
+deleted file mode 100644
+index 75dc071..0000000
+--- a/common/audio/sepolicy/vendor/tinymix.te
++++ /dev/null
+@@ -1,7 +0,0 @@
+-type tinymix, domain, coredomain;
+-type tinymix_exec, exec_type, system_file_type, file_type;
+-
+-init_daemon_domain(tinymix)
+-
+-allow tinymix audio_device:chr_file { ioctl open read write };
+-allow tinymix audio_device:dir search;
+-- 
+2.51.0
+
