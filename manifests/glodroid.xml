@@ -5,7 +5,7 @@
   <remote  name="gnome"    fetch="https://github.com/GNOME/" />
   <remote  name="mbroadband" fetch="https://gitlab.freedesktop.org/mobile-broadband" />
   <remote  name="dbus"       fetch="https://gitlab.freedesktop.org/dbus" />
-  <remote  name="libcamera"  fetch="https://git.libcamera.org/libcamera" />
+  <remote  name="ti"         fetch="https://git.ti.com/git" />
   <remote  name="videolan"   fetch="https://code.videolan.org/videolan" />
 
   <project path="glodroid"                        remote="glodroid" name="glodroid_configuration.git" groups="glodroid" revision="refs/tags/basedir-v0.9.0" />
@@ -18,9 +18,7 @@
   <project path="glodroid/vendor/mesa3d"          remote="aosp" name="platform/external/mesa3d"         groups="glodroid" revision="60fdab22a5f38f7ecef040961d1401d27d4d83b1" />
 
   <!-- camera components (vendor) -->
-  <project path="glodroid/vendor/libcamera"                     remote="libcamera" name="libcamera.git"      groups="glodroid" revision="refs/tags/v0.2.0" />
-  <project path="glodroid/vendor/libcamera/subprojects/libyuv"  remote="glodroid"  name="glodroid_forks.git" groups="glodroid" revision="refs/tags/libyuv-v0.8.2" />
-  <project path="glodroid/vendor/libcamera/subprojects/libyaml" remote="github"    name="yaml/libyaml.git"   groups="glodroid" revision="refs/tags/0.2.5" />
+  <project path="glodroid/vendor/libcamera"       remote="ti"   name="android/external-libcamera.git"   groups="glodroid" revision="523ebfdd1dbfc70305490530f26d961d190914be" />
 
   <!-- video codecs components (vendor) -->
   <project path="glodroid/vendor/ffmpeg"          remote="github"      name="FFmpeg/FFmpeg.git"  groups="glodroid" revision="refs/tags/n7.1" clone-depth="1" />
