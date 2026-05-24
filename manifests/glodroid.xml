@@ -8,6 +8,8 @@
   <remote  name="ti"         fetch="https://git.ti.com/git" />
   <remote  name="videolan"   fetch="https://code.videolan.org/videolan" />
 
+  <remove-project name="platform/external/libyaml" />
+
   <project path="glodroid"                        remote="glodroid" name="glodroid_configuration.git" groups="glodroid" revision="refs/tags/basedir-v0.9.0" />
   <project path="glodroid/configuration"          remote="glodroid" name="glodroid_configuration.git" groups="glodroid" revision="c82b898997a47b699869e9650920eacecc4fd14d" />
 
@@ -19,6 +21,8 @@
 
   <!-- camera components (vendor) -->
   <project path="glodroid/vendor/libcamera"       remote="ti"   name="android/external-libcamera.git"   groups="glodroid" revision="523ebfdd1dbfc70305490530f26d961d190914be" />
+  <project path="external/libyaml"                remote="ti"   name="android/external-libyaml.git"     groups="glodroid" revision="82526f06060e20a441f102266096c0d9f34e420a" />
+  <project path="external/libyuv_chromium"        remote="ti"   name="android/external-libyuv_chromium.git" groups="glodroid" revision="0bb9615271551c974f95397d8250a1edffa4433e" />
 
   <!-- video codecs components (vendor) -->
   <project path="glodroid/vendor/ffmpeg"          remote="github"      name="FFmpeg/FFmpeg.git"  groups="glodroid" revision="refs/tags/n7.1" clone-depth="1" />

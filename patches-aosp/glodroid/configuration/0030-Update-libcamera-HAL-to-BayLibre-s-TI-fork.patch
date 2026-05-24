@@ -1,0 +1,76 @@
+From 0472deb19a97d8e71a902f1d62c1ae2abf17026c Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sun, 24 May 2026 20:36:23 +0300
+Subject: [PATCH 30/32] Update libcamera HAL to BayLibre's/TI fork.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ .../camera/android.hardware.camera.provider@2.5.xml | 13 -------------
+ common/camera/board.mk                              |  8 --------
+ common/camera/device.mk                             |  7 ++-----
+ 3 files changed, 2 insertions(+), 26 deletions(-)
+ delete mode 100644 common/camera/android.hardware.camera.provider@2.5.xml
+
+diff --git a/common/camera/android.hardware.camera.provider@2.5.xml b/common/camera/android.hardware.camera.provider@2.5.xml
+deleted file mode 100644
+index 9af14d0..0000000
+--- a/common/camera/android.hardware.camera.provider@2.5.xml
++++ /dev/null
+@@ -1,13 +0,0 @@
+-<manifest version="1.0" type="device" target-level="8">
+-    <hal format="hidl">
+-        <name>android.hardware.camera.provider</name>
+-        <transport>hwbinder</transport>
+-        <impl level="generic"></impl>
+-        <version>2.5</version>
+-        <interface>
+-            <name>ICameraProvider</name>
+-            <instance>external/0</instance>
+-            <instance>legacy/0</instance>
+-        </interface>
+-    </hal>
+-</manifest>
+diff --git a/common/camera/board.mk b/common/camera/board.mk
+index 4d730a1..0da9cc0 100644
+--- a/common/camera/board.mk
++++ b/common/camera/board.mk
+@@ -6,12 +6,4 @@
+ 
+ BCC_PATH := $(patsubst $(CURDIR)/%,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+ 
+-BOARD_BUILD_AOSPEXT_LIBCAMERA := true
+-BOARD_LIBCAMERA_SRC_DIR := glodroid/vendor/libcamera
+-BOARD_LIBCAMERA_PIPELINES ?= simple
+-BOARD_LIBCAMERA_EXTRA_MESON_ARGS := -Dandroid=enabled
+-BOARD_LIBCAMERA_EXTRA_TARGETS := lib:libcamera-hal.so:hw:camera.libcamera:
+-
+-DEVICE_MANIFEST_FILE += $(BCC_PATH)/android.hardware.camera.provider@2.5.xml
+-
+ BOARD_VENDOR_SEPOLICY_DIRS       += $(BCC_PATH)/sepolicy/vendor
+diff --git a/common/camera/device.mk b/common/camera/device.mk
+index 38d763f..c5990a4 100644
+--- a/common/camera/device.mk
++++ b/common/camera/device.mk
+@@ -6,17 +6,14 @@
+ 
+ #External USB Camera HAL
+ PRODUCT_PACKAGES += \
+-    android.hardware.camera.provider@2.5-external-service \
++    android.hardware.camera.provider-V1-external-service \
+ 
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/external_camera_config.xml:$(TARGET_COPY_OUT_VENDOR)/etc/external_camera_config.xml
+ 
+ #Camera HAL
+ PRODUCT_PACKAGES += \
+-    camera.libcamera libcamera libcamera-base libcamera-cam lc-compliance \
+-    android.hardware.camera.provider@2.5-service_64 \
+-
+-PRODUCT_VENDOR_PROPERTIES += ro.hardware.camera=libcamera
++    com.android.hardware.camera.libcamera \
+ 
+ PRODUCT_COPY_FILES +=  \
+     frameworks/native/data/etc/android.hardware.camera.concurrent.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.concurrent.xml \
+-- 
+2.51.0
+
