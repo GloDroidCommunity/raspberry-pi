@@ -6,6 +6,7 @@ echo Building the Android
 pushd aosptree
 . build/envsetup.sh
 lunch gd_rpi4-trunk_staging-userdebug
-make images -k || make images -j1
+make -k || make -j1
+make images
 make sdcard
 popd

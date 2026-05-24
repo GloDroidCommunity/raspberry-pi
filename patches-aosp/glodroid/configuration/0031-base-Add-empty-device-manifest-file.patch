@@ -1,0 +1,36 @@
+From 8376111f9573504ce8600fb31c27df3fba349a6c Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sun, 24 May 2026 20:33:03 +0300
+Subject: [PATCH 31/32] base: Add empty device manifest file.
+
+AOSP checker relies on this file to determine the target-level.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/base/device.mk           | 2 ++
+ common/base/device_manifest.xml | 2 ++
+ 2 files changed, 4 insertions(+)
+ create mode 100644 common/base/device_manifest.xml
+
+diff --git a/common/base/device.mk b/common/base/device.mk
+index e3e6200..5afb67d 100644
+--- a/common/base/device.mk
++++ b/common/base/device.mk
+@@ -81,3 +81,5 @@ PRODUCT_PACKAGES += \
+ 
+ # ro.frp.pst points to a partition that contains factory reset protection information.
+ PRODUCT_VENDOR_PROPERTIES += ro.frp.pst=/dev/block/by-name/frp
++
++DEVICE_MANIFEST_FILE := $(LOCAL_PATH)/device_manifest.xml
+diff --git a/common/base/device_manifest.xml b/common/base/device_manifest.xml
+new file mode 100644
+index 0000000..d62d9c9
+--- /dev/null
++++ b/common/base/device_manifest.xml
+@@ -0,0 +1,2 @@
++<manifest version="1.0" type="device" target-level="8">
++</manifest>
+\ No newline at end of file
+-- 
+2.51.0
+
