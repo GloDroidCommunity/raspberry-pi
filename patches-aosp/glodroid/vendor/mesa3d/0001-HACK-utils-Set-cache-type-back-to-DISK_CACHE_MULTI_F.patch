@@ -1,37 +1,45 @@
-From 711bdf59ceab2f5c4453646f18b4ef880f59a387 Mon Sep 17 00:00:00 2001
+From 094ca21cc59987cb6597cd3b9e028ab43e06e66c Mon Sep 17 00:00:00 2001
 From: Roman Stratiienko <r.stratiienko@gmail.com>
-Date: Thu, 12 Dec 2024 00:42:12 +0200
+Date: Fri, 22 May 2026 22:18:40 +0300
 Subject: [PATCH] HACK: utils: Set cache type back to DISK_CACHE_MULTI_FILE
 
 This avoids minijail issue that can be observerd when audiocodecs allocate
 the memory via gbm.
 
-Change-Id: I6a966eab3f0db092fd5d3f3cfa3a94f1595a0e60
+Change-Id: I5e4246421f2170d30f9171dc3b3eb288c543c8cd
 Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
 ---
- src/util/disk_cache.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ src/util/disk_cache.c | 17 +----------------
+ 1 file changed, 1 insertion(+), 16 deletions(-)
 
 diff --git a/src/util/disk_cache.c b/src/util/disk_cache.c
-index 940b0a04145..a9ee3d49cd3 100644
+index 1f4338820dd..8035ac11270 100644
 --- a/src/util/disk_cache.c
 +++ b/src/util/disk_cache.c
-@@ -274,12 +274,12 @@ disk_cache_create(const char *gpu_name, const char *driver_id,
-    else if (debug_get_bool_option("MESA_DISK_CACHE_MULTI_FILE", false))
-       cache_type = DISK_CACHE_MULTI_FILE;
-    else {
--      cache_type = DISK_CACHE_DATABASE;
-+      cache_type = DISK_CACHE_MULTI_FILE;
-       /* Since switching the default cache to <mesa_shader_cache_db>, remove the
-        * old cache folder if it hasn't been modified for more than 7 days.
-        */
--      if (!getenv("MESA_SHADER_CACHE_DIR") && !getenv("MESA_GLSL_CACHE_DIR"))
--         disk_cache_delete_old_cache();
-+      //if (!getenv("MESA_SHADER_CACHE_DIR") && !getenv("MESA_GLSL_CACHE_DIR"))
-+         //disk_cache_delete_old_cache();
-    }
+@@ -223,22 +223,7 @@ disk_cache_create(const char *gpu_name, const char *driver_id,
+    uint64_t max_size = 0;
+    const char *max_size_str;
  
-    /* Create main writable cache. */
+-   if (debug_get_bool_option("MESA_DISK_CACHE_SINGLE_FILE", false)) {
+-      cache_type = DISK_CACHE_SINGLE_FILE;
+-   } else if (debug_get_bool_option("MESA_DISK_CACHE_DATABASE", false)) {
+-      cache_type = DISK_CACHE_DATABASE;
+-      /* Since switching the default cache to <mesa_shader_cache_db>, remove the
+-       * old cache folder if it hasn't been modified for more than 7 days.
+-       */
+-      if (!os_get_option("MESA_SHADER_CACHE_DIR") && !os_get_option("MESA_GLSL_CACHE_DIR") &&
+-          disk_cache_enabled())
+-         disk_cache_delete_old_cache();
+-   } else if (debug_get_bool_option("MESA_DISK_CACHE_MULTI_FILE", true)) {
+-      cache_type = DISK_CACHE_MULTI_FILE;
+-   } else {
+-      return NULL;
+-   }
+-
++   cache_type = DISK_CACHE_MULTI_FILE;
+    max_size_str = os_get_option("MESA_SHADER_CACHE_MAX_SIZE");
+ 
+    if (!max_size_str) {
 -- 
-2.43.0
+2.51.0
 

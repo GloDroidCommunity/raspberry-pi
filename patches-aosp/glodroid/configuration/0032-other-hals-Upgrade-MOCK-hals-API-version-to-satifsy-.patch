@@ -1,0 +1,64 @@
+From 1b3db3234fcd51a130ccfeb997b124ec7ae51847 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sun, 24 May 2026 20:35:15 +0300
+Subject: [PATCH 32/32] other-hals: Upgrade MOCK hals API version to satifsy
+ target-level 8
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/other-hals/device.mk                     | 8 ++++----
+ common/other-hals/sepolicy/vendor/file_contexts | 4 ----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/common/other-hals/device.mk b/common/other-hals/device.mk
+index 367e320..25bd5b9 100644
+--- a/common/other-hals/device.mk
++++ b/common/other-hals/device.mk
+@@ -30,12 +30,12 @@ PRODUCT_PACKAGES += \
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_THERMAL),)
+-PRODUCT_PACKAGES += android.hardware.thermal@2.0-service.mock
++PRODUCT_PACKAGES += com.android.hardware.thermal
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_USB),)
+ PRODUCT_PACKAGES += \
+-    android.hardware.usb-service.example \
++    com.android.hardware.usb \
+     android.hardware.usb.gadget-service.glodroid \
+ 
+ PRODUCT_COPY_FILES += \
+@@ -45,7 +45,7 @@ PRODUCT_COPY_FILES += \
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_GATEKEEPER),)
+-PRODUCT_PACKAGES += android.hardware.gatekeeper@1.0-service.software
++PRODUCT_PACKAGES += com.android.hardware.gatekeeper.nonsecure
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_KEYMINT),)
+@@ -57,7 +57,7 @@ PRODUCT_PACKAGES += android.hardware.identity-service.example
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_POWER),)
+-PRODUCT_PACKAGES += android.hardware.power-service.glodroid
++PRODUCT_PACKAGES += com.android.hardware.power
+ endif
+ 
+ ifeq ($(GD_NO_DEFAULT_VIBRATOR),)
+diff --git a/common/other-hals/sepolicy/vendor/file_contexts b/common/other-hals/sepolicy/vendor/file_contexts
+index 56f6d0f..79f3381 100644
+--- a/common/other-hals/sepolicy/vendor/file_contexts
++++ b/common/other-hals/sepolicy/vendor/file_contexts
+@@ -1,7 +1,3 @@
+-/vendor/bin/hw/android\.hardware\.usb-service\.glodroid                         u:object_r:hal_usb_default_exec:s0
+ /vendor/bin/hw/android\.hardware\.usb\.gadget-service\.glodroid                 u:object_r:hal_usb_gadget_default_exec:s0
+-/vendor/bin/hw/android\.hardware\.power-service\.glodroid                       u:object_r:hal_power_default_exec:s0
+-/vendor/bin/hw/android\.hardware\.gatekeeper@1\.0-service\.software             u:object_r:hal_gatekeeper_default_exec:s0
+-/vendor/bin/hw/android\.hardware\.thermal@2\.0-service.mock                     u:object_r:hal_thermal_default_exec:s0
+ /vendor/bin/hw/android\.hardware\.vibrator-service\.glodroid                    u:object_r:hal_vibrator_default_exec:s0
+ /(vendor|system/vendor)/bin/hw/android\.hardware\.drm@[0-9]+\.[0-9]+-service\.clearkey    u:object_r:hal_drm_clearkey_exec:s0
+-- 
+2.51.0
+

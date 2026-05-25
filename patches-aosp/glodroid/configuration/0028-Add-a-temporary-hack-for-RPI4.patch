@@ -1,0 +1,29 @@
+From 193920538aaf8529f419151eb1d7c801a46cb2d3 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Mon, 27 Apr 2026 11:29:21 +0300
+Subject: [PATCH 28/28] Add a temporary hack for RPI4
+
+After updating the kernel to 6.12, the USB device appears after the init
+process starts fastboot. Delay a fastboot initialization for 5 seconds
+to give the kernel enough time for USB initialization.
+
+Signed-off-by: Roman Stratiienko <r.stratiienko@gmail.com>
+---
+ common/base/init.recovery.glodroid.rc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/common/base/init.recovery.glodroid.rc b/common/base/init.recovery.glodroid.rc
+index 03274b7..32daa3e 100644
+--- a/common/base/init.recovery.glodroid.rc
++++ b/common/base/init.recovery.glodroid.rc
+@@ -1,3 +1,7 @@
++on early-init
++    # Temporary hack to let kernel USB subsystem initialize before starting fastbootd
++    wait /sys/wait_for_missing_file 5
++
+ on init
+     setprop sys.usb.typec.data_role device
+     setprop sys.usb.configfs 1
+-- 
+2.51.0
+

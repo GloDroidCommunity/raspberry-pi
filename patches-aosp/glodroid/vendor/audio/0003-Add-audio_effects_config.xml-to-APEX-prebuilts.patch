@@ -1,0 +1,49 @@
+From 3b9cb8330a356b93f34e2f6043c0573a815803a5 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sat, 23 May 2026 12:18:04 +0300
+Subject: [PATCH 3/4] Add audio_effects_config.xml to APEX prebuilts
+
+The effect service binary (android.hardware.audio.effect.service-aidl.generic)
+loads audio_effects_config.xml at startup. This file was missing from both
+the prebuilt_etc build rules and the APEX prebuilts list, causing the service
+to fail with 'config file audio_effects_config.xml not found'.
+
+AI assisted
+---
+ Android.bp                                 | 7 +++++++
+ apex/com.android.hardware.audio/Android.bp | 1 +
+ 2 files changed, 8 insertions(+)
+
+diff --git a/Android.bp b/Android.bp
+index 934d62a..42ea889 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -295,6 +295,13 @@ prebuilt_etc {
+     installable: false,
+ }
+ 
++prebuilt_etc {
++    name: "baylibre_audio_effects_config.xml",
++    src: "audio_effects_config.xml",
++    filename: "audio_effects_config.xml",
++    installable: false,
++}
++
+ prebuilt_etc {
+     name: "mixer_controls.xml",
+     src: "mixer_controls.xml",
+diff --git a/apex/com.android.hardware.audio/Android.bp b/apex/com.android.hardware.audio/Android.bp
+index 641a03a..6fb0c60 100644
+--- a/apex/com.android.hardware.audio/Android.bp
++++ b/apex/com.android.hardware.audio/Android.bp
+@@ -39,6 +39,7 @@ apex {
+     prebuilts: [
+         "android.hardware.audio.service-aidl.generic.rc",
+         "android.hardware.audio.service-aidl.generic.xml",
++        "baylibre_audio_effects_config.xml",
+         "mixer_controls.xml",
+         "mixer_controls.rpi4.xml",
+         "mixer_controls.rpi400.xml",
+-- 
+2.51.0
+

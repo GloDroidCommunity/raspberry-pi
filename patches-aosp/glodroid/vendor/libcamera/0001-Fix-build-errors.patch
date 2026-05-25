@@ -1,0 +1,97 @@
+From 7158410cfa531024956603dbe827f554a0a63b22 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Sun, 24 May 2026 12:14:08 +0300
+Subject: [PATCH] Fix build errors
+
+---
+ Android.bp                                        |  2 --
+ src/android/hal/device/LibcameraDevice.cpp        | 12 ++++++------
+ src/android/hal/device/LibcameraDeviceSession.cpp |  4 ++--
+ 3 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 77d44059..4bd7dc2f 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -18,7 +18,6 @@ cc_defaults {
+         "-Werror",
+         "-Wshadow",
+         "-Wno-c99-designator",
+-        "-D_FORTIFY_SOURCE=2",
+     ],
+     cpp_std: "c++17",
+     cppflags: [
+@@ -27,7 +26,6 @@ cc_defaults {
+         "-DHAVE_LOCALE_T",
+         "-Wshadow",
+         "-Wno-c99-designator",
+-        "-D_FORTIFY_SOURCE=2",
+         "-Wextra-semi",
+         "-Wno-implicit-fallthrough",
+         /* Real path will be set via environment variables at runtime */
+diff --git a/src/android/hal/device/LibcameraDevice.cpp b/src/android/hal/device/LibcameraDevice.cpp
+index c617396d..17f22fc8 100644
+--- a/src/android/hal/device/LibcameraDevice.cpp
++++ b/src/android/hal/device/LibcameraDevice.cpp
+@@ -39,7 +39,7 @@ using ::android::hardware::camera::device::implementation::fromStatus;
+ 
+ LibcameraDevice::LibcameraDevice(
+         sp<CameraModule> module, const std::string& cameraId,
+-        const SortedVector<std::pair<std::string, std::string>>& cameraDeviceNames)
++        [[maybe_unused]] const SortedVector<std::pair<std::string, std::string>>& cameraDeviceNames)
+     : mModule(module), mCameraId(cameraId) {
+     mCameraIdInt = atoi(mCameraId.c_str());
+     // Should not reach here as provider also validate ID
+@@ -233,7 +233,7 @@ ndk::ScopedAStatus LibcameraDevice::open(const std::shared_ptr<ICameraDeviceCall
+     struct camera_info info;
+     res = mModule->getCameraInfo(mCameraIdInt, &info);
+     if (res != OK) {
+-        ALOGE("%s: Could not open camera: getCameraInfo failed");
++        ALOGE("%s: Could not open camera: getCameraInfo failed", __FUNCTION__);
+         device->common.close(&device->common);
+         _aidl_return = nullptr;
+         return fromStatus(Status::ILLEGAL_ARGUMENT);
+@@ -260,8 +260,8 @@ ndk::ScopedAStatus LibcameraDevice::open(const std::shared_ptr<ICameraDeviceCall
+     return fromStatus(Status::OK);
+ }
+ ndk::ScopedAStatus LibcameraDevice::openInjectionSession(
+-        const std::shared_ptr<ICameraDeviceCallback>& in_callback,
+-        std::shared_ptr<ICameraInjectionSession>* _aidl_return) {
++        [[maybe_unused]] const std::shared_ptr<ICameraDeviceCallback>& in_callback,
++        [[maybe_unused]] std::shared_ptr<ICameraInjectionSession>* _aidl_return) {
+     _aidl_return = nullptr;
+     return fromStatus(Status::OPERATION_NOT_SUPPORTED);
+ }
+@@ -278,12 +278,12 @@ ndk::ScopedAStatus LibcameraDevice::setTorchMode(bool in_on) {
+     return fromStatus(status);
+ }
+ 
+-ndk::ScopedAStatus LibcameraDevice::turnOnTorchWithStrengthLevel(int32_t in_torchStrength) {
++ndk::ScopedAStatus LibcameraDevice::turnOnTorchWithStrengthLevel([[maybe_unused]] int32_t in_torchStrength) {
+     // not supported by hardware module
+     return fromStatus(Status::OPERATION_NOT_SUPPORTED);
+ }
+ 
+-ndk::ScopedAStatus LibcameraDevice::getTorchStrengthLevel(int32_t* _aidl_return) {
++ndk::ScopedAStatus LibcameraDevice::getTorchStrengthLevel([[maybe_unused]] int32_t* _aidl_return) {
+     // not supported by hardware module
+     _aidl_return = nullptr;
+     return fromStatus(Status::OPERATION_NOT_SUPPORTED);
+diff --git a/src/android/hal/device/LibcameraDeviceSession.cpp b/src/android/hal/device/LibcameraDeviceSession.cpp
+index a2e7b731..3845c7ba 100644
+--- a/src/android/hal/device/LibcameraDeviceSession.cpp
++++ b/src/android/hal/device/LibcameraDeviceSession.cpp
+@@ -1778,8 +1778,8 @@ ScopedAStatus LibcameraDeviceSession::signalStreamFlush(const std::vector<int32_
+     return fromStatus(Status::OK);
+ }
+ ScopedAStatus LibcameraDeviceSession::switchToOffline(
+-        const std::vector<int32_t>& in_streamsToKeep,
+-        CameraOfflineSessionInfo* out_offlineSessionInfo,
++        [[maybe_unused]] const std::vector<int32_t>& in_streamsToKeep,
++        [[maybe_unused]] CameraOfflineSessionInfo* out_offlineSessionInfo,
+         std::shared_ptr<ICameraOfflineSession>* _aidl_return) {
+     ALOGI("%s()", __func__);
+     *_aidl_return = nullptr;
+-- 
+2.51.0
+

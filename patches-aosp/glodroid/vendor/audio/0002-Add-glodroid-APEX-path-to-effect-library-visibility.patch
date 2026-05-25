@@ -1,0 +1,238 @@
+From cd654d4290178144090c7e7d2809943a5589bdb2 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Fri, 22 May 2026 22:37:08 +0300
+Subject: [PATCH 2/4] Add glodroid APEX path to effect library visibility
+
+All 18 effect libraries (lib*sw_generic) now include
+//glodroid/vendor/audio/apex/com.android.hardware.audio
+in their visibility list to fix Soong build errors when
+building under the glodroid tree.
+
+AI assisted
+---
+ acousticEchoCanceler/Android.bp   | 1 +
+ automaticGainControlV1/Android.bp | 1 +
+ automaticGainControlV2/Android.bp | 1 +
+ bassboost/Android.bp              | 1 +
+ downmix/Android.bp                | 1 +
+ dynamicProcessing/Android.bp      | 1 +
+ envReverb/Android.bp              | 1 +
+ equalizer/Android.bp              | 1 +
+ eraser/Android.bp                 | 1 +
+ extension/Android.bp              | 1 +
+ hapticGenerator/Android.bp        | 1 +
+ loudnessEnhancer/Android.bp       | 1 +
+ noiseSuppression/Android.bp       | 1 +
+ presetReverb/Android.bp           | 1 +
+ spatializer/Android.bp            | 1 +
+ virtualizer/Android.bp            | 1 +
+ visualizer/Android.bp             | 1 +
+ volume/Android.bp                 | 1 +
+ 18 files changed, 18 insertions(+)
+
+diff --git a/acousticEchoCanceler/Android.bp b/acousticEchoCanceler/Android.bp
+index e48a5a4..56f22cd 100644
+--- a/acousticEchoCanceler/Android.bp
++++ b/acousticEchoCanceler/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/automaticGainControlV1/Android.bp b/automaticGainControlV1/Android.bp
+index 1459963..d423132 100644
+--- a/automaticGainControlV1/Android.bp
++++ b/automaticGainControlV1/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/automaticGainControlV2/Android.bp b/automaticGainControlV2/Android.bp
+index 6a3312b..24673dc 100644
+--- a/automaticGainControlV2/Android.bp
++++ b/automaticGainControlV2/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/bassboost/Android.bp b/bassboost/Android.bp
+index e8f913f..3b5dda2 100644
+--- a/bassboost/Android.bp
++++ b/bassboost/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/downmix/Android.bp b/downmix/Android.bp
+index 0460736..a78be9a 100644
+--- a/downmix/Android.bp
++++ b/downmix/Android.bp
+@@ -32,6 +32,7 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+         ":__subpackages__", "//hardware/generic/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/dynamicProcessing/Android.bp b/dynamicProcessing/Android.bp
+index 00ec073..179c6cb 100644
+--- a/dynamicProcessing/Android.bp
++++ b/dynamicProcessing/Android.bp
+@@ -32,6 +32,7 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+         ":__subpackages__", "//hardware/generic/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/envReverb/Android.bp b/envReverb/Android.bp
+index 380fe3b..5b9a9f4 100644
+--- a/envReverb/Android.bp
++++ b/envReverb/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/equalizer/Android.bp b/equalizer/Android.bp
+index 2532599..074a6ac 100644
+--- a/equalizer/Android.bp
++++ b/equalizer/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/eraser/Android.bp b/eraser/Android.bp
+index c583d5a..f7eb210 100644
+--- a/eraser/Android.bp
++++ b/eraser/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/extension/Android.bp b/extension/Android.bp
+index e094b69..39b35fd 100644
+--- a/extension/Android.bp
++++ b/extension/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/hapticGenerator/Android.bp b/hapticGenerator/Android.bp
+index a76596d..02c0863 100644
+--- a/hapticGenerator/Android.bp
++++ b/hapticGenerator/Android.bp
+@@ -32,6 +32,7 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+         ":__subpackages__", "//hardware/generic/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/loudnessEnhancer/Android.bp b/loudnessEnhancer/Android.bp
+index 1c291e7..83cfda5 100644
+--- a/loudnessEnhancer/Android.bp
++++ b/loudnessEnhancer/Android.bp
+@@ -32,6 +32,7 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+         ":__subpackages__", "//hardware/generic/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/noiseSuppression/Android.bp b/noiseSuppression/Android.bp
+index 44b23f3..160203e 100644
+--- a/noiseSuppression/Android.bp
++++ b/noiseSuppression/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/presetReverb/Android.bp b/presetReverb/Android.bp
+index 5ea8977..0f7b3f0 100644
+--- a/presetReverb/Android.bp
++++ b/presetReverb/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/spatializer/Android.bp b/spatializer/Android.bp
+index 18210df..fca5511 100644
+--- a/spatializer/Android.bp
++++ b/spatializer/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/virtualizer/Android.bp b/virtualizer/Android.bp
+index 6989e4c..bb39a99 100644
+--- a/virtualizer/Android.bp
++++ b/virtualizer/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/visualizer/Android.bp b/visualizer/Android.bp
+index 83dfcf8..b2a9cef 100644
+--- a/visualizer/Android.bp
++++ b/visualizer/Android.bp
+@@ -32,6 +32,7 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+         ":__subpackages__", "//hardware/generic/audio/apex/com.android.hardware.audio",
+     ],
+ }
+diff --git a/volume/Android.bp b/volume/Android.bp
+index 450fc83..e954e33 100644
+--- a/volume/Android.bp
++++ b/volume/Android.bp
+@@ -32,5 +32,6 @@ cc_library_shared {
+     visibility: [
+         "//hardware/amlogic/yukawa/audio/apex/com.android.hardware.audio",
+         "//hardware/baylibre/audio/apex/com.android.hardware.audio",
++        "//glodroid/vendor/audio/apex/com.android.hardware.audio",
+     ],
+ }
+-- 
+2.51.0
+

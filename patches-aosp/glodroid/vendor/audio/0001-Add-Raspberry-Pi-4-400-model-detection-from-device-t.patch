@@ -1,0 +1,217 @@
+From 5fa63e15945e19161d7c04321c672d56cbba3924 Mon Sep 17 00:00:00 2001
+From: Roman Stratiienko <r.stratiienko@gmail.com>
+Date: Fri, 22 May 2026 22:26:09 +0300
+Subject: [PATCH 1/4] Add Raspberry Pi 4/400 model detection from device tree
+
+Detect RPi model from /sys/firmware/devicetree/base/compatible
+at HAL startup and auto-configure:
+- primary ALSA card (Headphones on rpi4, Dummy on rpi400)
+- mixer controls XML (mixer_controls.rpi4.xml / mixer_controls.rpi400.xml)
+
+Also add all mixer_controls*.xml to APEX prebuilts.
+
+AI assisted
+---
+ Android.bp                                 | 18 ++++++
+ apex/com.android.hardware.audio/Android.bp |  3 +
+ main.cpp                                   | 64 ++++++++++++++++++++++
+ mixer_controls.rpi4.xml                    | 18 ++++++
+ mixer_controls.rpi400.xml                  | 29 ++++++++++
+ 5 files changed, 132 insertions(+)
+ create mode 100644 mixer_controls.rpi4.xml
+ create mode 100644 mixer_controls.rpi400.xml
+
+diff --git a/Android.bp b/Android.bp
+index 9bca800..934d62a 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -295,3 +295,21 @@ prebuilt_etc {
+     installable: false,
+ }
+ 
++prebuilt_etc {
++    name: "mixer_controls.xml",
++    src: "mixer_controls.xml",
++    installable: false,
++}
++
++prebuilt_etc {
++    name: "mixer_controls.rpi4.xml",
++    src: "mixer_controls.rpi4.xml",
++    installable: false,
++}
++
++prebuilt_etc {
++    name: "mixer_controls.rpi400.xml",
++    src: "mixer_controls.rpi400.xml",
++    installable: false,
++}
++
+diff --git a/apex/com.android.hardware.audio/Android.bp b/apex/com.android.hardware.audio/Android.bp
+index 507f2e0..641a03a 100644
+--- a/apex/com.android.hardware.audio/Android.bp
++++ b/apex/com.android.hardware.audio/Android.bp
+@@ -39,5 +39,8 @@ apex {
+     prebuilts: [
+         "android.hardware.audio.service-aidl.generic.rc",
+         "android.hardware.audio.service-aidl.generic.xml",
++        "mixer_controls.xml",
++        "mixer_controls.rpi4.xml",
++        "mixer_controls.rpi400.xml",
+     ],
+ }
+diff --git a/main.cpp b/main.cpp
+index 985cc2a..1f101a6 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -15,10 +15,15 @@
+  */
+ 
+ #include <cstdlib>
++#include <cstring>
+ #include <ctime>
++#include <string>
+ #include <utility>
+ #include <vector>
+ 
++#include <fcntl.h>
++#include <unistd.h>
++
+ #define LOG_TAG "AHAL_Main"
+ #include <android-base/logging.h>
+ #include <android-base/properties.h>
+@@ -38,6 +43,60 @@ using aidl::android::hardware::audio::core::internal::AudioPolicyConfigXmlConver
+ 
+ namespace {
+ 
++constexpr char kEtcPath[] = "/vendor/etc";
++constexpr char kDtCompatible[] = "/sys/firmware/devicetree/base/compatible";
++constexpr char kRpi400Compat[] = "raspberrypi,400";
++
++static std::string detectRpiModel() {
++    int f = open(kDtCompatible, O_RDONLY);
++    if (f < 0) {
++        LOG(WARNING) << __func__ << ": Failed to open " << kDtCompatible
++                     << ", defaulting to rpi4";
++        return "rpi4";
++    }
++
++    char buf[256];
++    memset(buf, 0, sizeof(buf));
++    int len = read(f, buf, sizeof(buf) - 1);
++    close(f);
++
++    if (len < 0) {
++        LOG(WARNING) << __func__ << ": Failed to read " << kDtCompatible
++                     << ", defaulting to rpi4";
++        return "rpi4";
++    }
++
++    std::string compat(buf, len);
++    LOG(INFO) << __func__ << ": DT compatible is '" << compat << "'";
++
++    if (compat.find(kRpi400Compat) != std::string::npos) {
++        LOG(INFO) << __func__ << ": Detected Raspberry Pi 400";
++        return "rpi400";
++    }
++
++    LOG(INFO) << __func__ << ": Detected Raspberry Pi 4";
++    return "rpi4";
++}
++
++static void configureRpiPlatform(const std::string& model) {
++    std::string cardName;
++    std::string mixerConfig;
++
++    if (model == "rpi400") {
++        cardName = "Dummy";
++        mixerConfig = std::string(kEtcPath) + "/mixer_controls.rpi400.xml";
++    } else {
++        cardName = "Headphones";
++        mixerConfig = std::string(kEtcPath) + "/mixer_controls.rpi4.xml";
++    }
++
++    LOG(INFO) << __func__ << ": Setting primary card_name=" << cardName;
++    LOG(INFO) << __func__ << ": Setting mixer config=" << mixerConfig;
++
++    android::base::SetProperty("persist.vendor.audio.primary.card_name", cardName);
++    android::base::SetProperty("persist.vendor.audio.mixer.config", mixerConfig);
++}
++
+ ChildInterface<Module> createModule(const std::string& name,
+                                     std::unique_ptr<Module::Configuration>&& config) {
+     ChildInterface<Module> result;
+@@ -80,6 +139,11 @@ int main() {
+ 
+     LOG(INFO) << "Init for BayLibre Generic Audio AIDL HAL";
+ 
++    // Detect Raspberry Pi model from device tree and configure
++    // the appropriate ALSA card name and mixer controls.
++    std::string rpiModel = detectRpiModel();
++    configureRpiPlatform(rpiModel);
++
+     // Load audio policy configuration from platform-specific XML file
+     // The configuration file location can be customized per platform:
+     // - Default: /vendor/etc/audio_policy_configuration.xml
+diff --git a/mixer_controls.rpi4.xml b/mixer_controls.rpi4.xml
+new file mode 100644
+index 0000000..93cb652
+--- /dev/null
++++ b/mixer_controls.rpi4.xml
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Mixer controls for Raspberry Pi 4 (bcm2835 Headphones card) -->
++<mixerControls>
++    <!-- Volume controls (PCM Playback Volume is the only volume ctl) -->
++    <control function="MASTER_VOLUME" type="int">
++        <name>PCM Playback Volume</name>
++    </control>
++
++    <!-- Mute/switch control -->
++    <control function="MASTER_SWITCH" type="bool">
++        <name>PCM Playback Switch</name>
++    </control>
++
++    <!-- Per-device hardware volume (reuse PCM Playback Volume) -->
++    <control function="HW_VOLUME" type="int">
++        <name>PCM Playback Volume</name>
++    </control>
++</mixerControls>
+diff --git a/mixer_controls.rpi400.xml b/mixer_controls.rpi400.xml
+new file mode 100644
+index 0000000..13add8a
+--- /dev/null
++++ b/mixer_controls.rpi400.xml
+@@ -0,0 +1,29 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Mixer controls for Raspberry Pi 400 (snd-dummy card) -->
++<mixerControls>
++    <!-- Volume controls -->
++    <control function="MASTER_VOLUME" type="int">
++        <name>PCM Playback Volume</name>
++    </control>
++
++    <!-- Mute/switch control -->
++    <control function="MASTER_SWITCH" type="bool">
++        <name>PCM Playback Switch</name>
++    </control>
++
++    <!-- Per-device hardware volume -->
++    <control function="HW_VOLUME" type="int">
++        <name>PCM Playback Volume</name>
++    </control>
++
++    <!-- Microphone mute/switch -->
++    <control function="MIC_SWITCH" type="bool">
++        <name>Capture Switch</name>
++    </control>
++
++    <!-- Microphone gain -->
++    <control function="MIC_GAIN" type="int">
++        <name>Capture Volume</name>
++        <name>PCM Capture Volume</name>
++    </control>
++</mixerControls>
+-- 
+2.51.0
+
